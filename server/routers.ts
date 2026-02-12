@@ -18,8 +18,9 @@ import {
   updateAuditReportStatus,
   updateAuditReportFindingsCount,
   updateAuditReportSiteData,
+  deleteAuditReport,
 } from "./db";
-import { storagePut, storageGet } from "./storage";
+import { storagePut, storageGet, storageDelete } from "./storage";
 import { parseAuditReportBuffer } from "./parser";
 import { systemRouter } from "./_core/systemRouter";
 
@@ -115,6 +116,7 @@ export const appRouter = router({
       .input(
         z.object({
           reportId: z.number().optional(),
+          reportIds: z.array(z.number()).optional(),
           thematicNumber: z.number().optional(),
           criterionReference: z.string().optional(),
           impact: z.enum(["Bloquant", "Majeur", "Mineur"]).optional(),
@@ -226,6 +228,43 @@ export const appRouter = router({
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
             message: errorMessage,
+          });
+        }
+      }),
+
+    // Supprimer un rapport
+    deleteReport: protectedProcedure
+      .input(z.object({ reportId: z.number() }))
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const report = await getAuditReportById(input.reportId);
+          if (!report) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: "Report not found",
+            });
+          }
+
+          // Vérifier que l'utilisateur est propriétaire du rapport
+          if (report.userId !== ctx.user.id) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "You don't have permission to delete this report",
+            });
+          }
+
+          // Supprimer le fichier du stockage
+          await storageDelete(report.fileKey);
+
+          // Supprimer le rapport et ses constats de la base de données
+          await deleteAuditReport(input.reportId);
+
+          return { success: true };
+        } catch (error) {
+          console.error("[Audit] Error deleting report:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete report",
           });
         }
       }),

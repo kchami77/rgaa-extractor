@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, rgaaThematics, rgaaCriteria, auditReports, findings, findingTemplates } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -386,7 +386,8 @@ export async function updateAuditReportSiteData(
  * Effectue un JOIN entre findings, audit_reports et rgaa_criteria
  */
 export async function getEnrichedFindings(filters: {
-  reportId?: number;
+  reportId?: number; // Kept for backward compatibility if needed, but we'll use reportIds mainly
+  reportIds?: number[];
   thematicNumber?: number;
   impact?: "Bloquant" | "Majeur" | "Mineur";
   criterionReference?: string;
@@ -397,6 +398,9 @@ export async function getEnrichedFindings(filters: {
   const conditions = [];
   if (filters.reportId !== undefined) {
     conditions.push(eq(findings.reportId, filters.reportId));
+  }
+  if (filters.reportIds !== undefined && filters.reportIds.length > 0) {
+    conditions.push(inArray(findings.reportId, filters.reportIds));
   }
   if (filters.thematicNumber !== undefined) {
     conditions.push(eq(findings.thematicNumber, filters.thematicNumber));
@@ -439,4 +443,18 @@ export async function getEnrichedFindings(filters: {
     return await query.where(and(...conditions)).orderBy(findings.thematicNumber, findings.criterionReference);
   }
   return await query.orderBy(findings.thematicNumber, findings.criterionReference);
+}
+
+/**
+ * Supprime un rapport d'audit et ses constats associés
+ */
+export async function deleteAuditReport(reportId: number) {
+  const db = await getDb();
+  if (!db) return;
+
+  // Supprimer d'abord les constats associés
+  await db.delete(findings).where(eq(findings.reportId, reportId));
+  
+  // Supprimer le rapport
+  await db.delete(auditReports).where(eq(auditReports.id, reportId));
 }

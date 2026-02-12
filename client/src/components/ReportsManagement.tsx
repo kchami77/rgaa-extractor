@@ -26,9 +26,27 @@ export default function ReportsManagement() {
     },
   });
 
+  const deleteReport = trpc.audit.deleteReport.useMutation({
+    onSuccess: () => {
+      toast.success("Rapport supprimé avec succès");
+      utils.audit.getUserReports.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Erreur lors de la suppression : ${error.message}`);
+    },
+  });
+
   const handleProcess = (reportId: number) => {
     setProcessingId(reportId);
     processReport.mutate({ reportId });
+  };
+
+  const handleDelete = (reportId: number) => {
+    console.log("Delete button clicked for report:", reportId);
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce rapport ? Cette action est irréversible et supprimera tous les constats associés.")) {
+      console.log("Confirmation accepted, mutating...");
+      deleteReport.mutate({ reportId });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -56,7 +74,7 @@ export default function ReportsManagement() {
         return "En attente";
       default:
         return status;
-    }
+      }
   };
 
   if (isLoading) {
@@ -152,8 +170,17 @@ export default function ReportsManagement() {
                   <Badge className={getStatusColor(report.status)}>
                     {getStatusLabel(report.status)}
                   </Badge>
-                  <Button variant="ghost" size="sm">
-                    <Trash2 className="w-4 h-4 text-red-600" />
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => handleDelete(report.id)}
+                    disabled={deleteReport.isLoading && deleteReport.variables?.reportId === report.id}
+                  >
+                   {deleteReport.isLoading && deleteReport.variables?.reportId === report.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-red-600" />
+                    ) : (
+                      <Trash2 className="w-4 h-4 text-red-600" />
+                    )}
                   </Button>
                 </div>
               </div>

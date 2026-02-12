@@ -5,18 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, AlertCircle, AlertTriangle, Info, ExternalLink, ChevronDown, ChevronRight, FileText, Globe, LayoutList, Layers, FolderOpen } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 type ViewMode = "by-criterion" | "by-report" | "flat";
 
 export default function FindingsLibrary() {
   const [viewMode, setViewMode] = useState<ViewMode>("by-criterion");
-  const [selectedReport, setSelectedReport] = useState<string>("all");
+  const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
   const [selectedThematic, setSelectedThematic] = useState<string>("all");
   const [selectedImpact, setSelectedImpact] = useState<string>("all");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const { data: findings, isLoading } = trpc.audit.getEnrichedFindings.useQuery({
-    reportId: selectedReport !== "all" ? parseInt(selectedReport) : undefined,
+    reportIds: selectedReportIds.map(id => parseInt(id)),
     thematicNumber: selectedThematic !== "all" ? parseInt(selectedThematic) : undefined,
     impact: selectedImpact !== "all" ? (selectedImpact as any) : undefined,
   });
@@ -155,20 +156,16 @@ export default function FindingsLibrary() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Report filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Rapport</label>
-              <Select value={selectedReport} onValueChange={setSelectedReport}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tous les rapports" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les rapports</SelectItem>
-                  {reports?.filter(r => r.status === "completed").map((r) => (
-                    <SelectItem key={r.id} value={r.id.toString()}>
-                      {r.fileName.replace(/^\d+-/, '').replace(/\.docx$/i, '')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Rapports</label>
+              <MultiSelect
+                options={reports?.filter(r => r.status === "completed").map(r => ({
+                  label: r.fileName.replace(/^\d+-/, '').replace(/\.docx$/i, ''),
+                  value: r.id.toString()
+                })) || []}
+                selected={selectedReportIds}
+                onChange={setSelectedReportIds}
+                placeholder="Tous les rapports"
+              />
             </div>
 
             {/* Thematic filter */}
@@ -381,7 +378,7 @@ function FindingRow({ finding, showReport }: { finding: any; showReport: boolean
     Bloquant: { icon: <AlertCircle className="w-3.5 h-3.5" />, bg: "bg-red-100 text-red-800", dot: "bg-red-500" },
     Majeur: { icon: <AlertTriangle className="w-3.5 h-3.5" />, bg: "bg-orange-100 text-orange-800", dot: "bg-orange-500" },
     Mineur: { icon: <Info className="w-3.5 h-3.5" />, bg: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500" },
-  }[finding.impact] || { icon: null, bg: "bg-gray-100 text-gray-800", dot: "bg-gray-500" };
+  }[finding.impact as "Bloquant" | "Majeur" | "Mineur"] || { icon: null, bg: "bg-gray-100 text-gray-800", dot: "bg-gray-500" };
 
   // Try to match location with audited page URL
   let locationUrl: string | null = null;

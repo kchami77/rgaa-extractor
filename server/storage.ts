@@ -173,3 +173,53 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
   }
   return s3Get(relKey);
 }
+
+export async function storageDelete(relKey: string): Promise<void> {
+  if (isLocalStorage) {
+    console.log(`[Storage] Deleting locally: ${relKey}`);
+    return localDelete(relKey);
+  }
+  return s3Delete(relKey);
+}
+
+// ============================================================
+// Internal delete helpers
+// ============================================================
+
+async function localDelete(relKey: string): Promise<void> {
+  const key = relKey.replace(/^\/+/, '');
+  const filePath = path.join(UPLOADS_DIR, key);
+  
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+  } else {
+    console.warn(`[Storage] File not found for deletion: ${filePath}`);
+  }
+}
+
+async function s3Delete(relKey: string): Promise<void> {
+  // Attempt to delete from S3/Forge if supported
+  const { baseUrl, apiKey } = getStorageConfig();
+  const key = normalizeKey(relKey);
+  
+  const deleteUrl = new URL(
+    "v1/storage/delete", 
+    ensureTrailingSlash(baseUrl)
+  );
+  deleteUrl.searchParams.set("path", key);
+  
+  try {
+    const response = await fetch(deleteUrl, {
+      method: "DELETE",
+      headers: buildAuthHeaders(apiKey),
+    });
+
+    if (!response.ok) {
+      // If 404, maybe it's already gone, so strict error might not be needed.
+      // But if 403 or 500, we should know.
+      console.warn(`[Storage] Cloud delete failed: ${response.status} ${response.statusText}`);
+    }
+  } catch (err) {
+    console.warn("[Storage] Cloud delete error:", err);
+  }
+}
