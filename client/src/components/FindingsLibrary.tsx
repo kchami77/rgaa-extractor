@@ -12,17 +12,112 @@ type ViewMode = "by-criterion" | "by-report" | "flat";
 export default function FindingsLibrary() {
   const [viewMode, setViewMode] = useState<ViewMode>("by-criterion");
   const [selectedReportIds, setSelectedReportIds] = useState<string[]>([]);
+  const [selectedPageNames, setSelectedPageNames] = useState<string[]>([]);
   const [selectedThematic, setSelectedThematic] = useState<string>("all");
   const [selectedImpact, setSelectedImpact] = useState<string>("all");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const { data: findings, isLoading } = trpc.audit.getEnrichedFindings.useQuery({
     reportIds: selectedReportIds.map(id => parseInt(id)),
+    pageNames: selectedPageNames.length > 0 ? selectedPageNames : undefined,
     thematicNumber: selectedThematic !== "all" ? parseInt(selectedThematic) : undefined,
     impact: selectedImpact !== "all" ? (selectedImpact as any) : undefined,
   });
 
   const { data: reports } = trpc.audit.getUserReports.useQuery();
+
+  // Extract unique pages from findings' location field
+  const availablePages = useMemo(() => {
+    if (!findings) return [];
+
+    // Helper: strip all accents for comparison
+    const stripAccents = (s: string) =>
+      s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    // Canonical page names in the exact desired order
+    const canonicalPages = [
+      "Toutes les pages",
+      "Commune",
+      "Accueil",
+      "Contact",
+      "Mentions légales",
+      "Déclaration d'accessibilité",
+      "Plan du site",
+      "Aide à la navigation",
+      "Recherche",
+      "Liste des actualités",
+      "Actualité détaillée",
+      "Liste des évènements",
+      "Événement détaillé",
+      "Page Sommaire",
+      "Page de contenu",
+      "Connexion utilisateur",
+    ];
+
+    // Matching rules: stripped pattern -> canonical name
+    const matchingRules: Array<{ pattern: RegExp; canonical: string }> = [
+      { pattern: /^toutes les pages/,                    canonical: "Toutes les pages" },
+      { pattern: /^commune/,                             canonical: "Commune" },
+      { pattern: /^accueil/,                             canonical: "Accueil" },
+      { pattern: /^contact/,                             canonical: "Contact" },
+      { pattern: /^mention/,                             canonical: "Mentions légales" },
+      { pattern: /^declaration/,                         canonical: "Déclaration d'accessibilité" },
+      { pattern: /^plan du site/,                        canonical: "Plan du site" },
+      { pattern: /^aide a la navigation/,                canonical: "Aide à la navigation" },
+      { pattern: /^recherche/,                           canonical: "Recherche" },
+      { pattern: /^liste des actual/,                    canonical: "Liste des actualités" },
+      { pattern: /^actualite/,                           canonical: "Actualité détaillée" },
+      { pattern: /^liste des eve/,                       canonical: "Liste des évènements" },
+      { pattern: /^eve?ne?ment/,                         canonical: "Événement détaillé" },
+      { pattern: /^page sommaire/,                       canonical: "Page Sommaire" },
+      { pattern: /^page de contenu/,                     canonical: "Page de contenu" },
+      { pattern: /^connexion/,                           canonical: "Connexion utilisateur" },
+    ];
+
+    const pagesSet = new Set<string>();
+
+    findings.forEach(f => {
+      if (f.location) {
+        let name = f.location.trim();
+
+        // Remove content in guillemets « ... »
+        name = name.split(/\s*«/)[0].trim();
+
+        // Remove content after " : ", " - ", " | "
+        name = name.split(/\s+[:|]\s+/)[0];
+        name = name.split(/\s+-\s+/)[0];
+        name = name.trim();
+
+        // Strip accents for matching
+        const stripped = stripAccents(name);
+
+        // Try to match against canonical rules
+        let matched = false;
+        for (const rule of matchingRules) {
+          if (rule.pattern.test(stripped)) {
+            pagesSet.add(rule.canonical);
+            matched = true;
+            break;
+          }
+        }
+
+        // If no rule matched, use the cleaned name as-is
+        if (!matched) {
+          pagesSet.add(name);
+        }
+      }
+    });
+
+    // Sort by canonical order, then alphabetical for extras
+    return Array.from(pagesSet).sort((a, b) => {
+      const indexA = canonicalPages.indexOf(a);
+      const indexB = canonicalPages.indexOf(b);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, [findings]);
 
   // Impact stats
   const impactStats = useMemo(() => {
@@ -153,7 +248,7 @@ export default function FindingsLibrary() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Report filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Rapports</label>
@@ -166,6 +261,24 @@ export default function FindingsLibrary() {
                 onChange={setSelectedReportIds}
                 placeholder="Tous les rapports"
               />
+            </div>
+
+            {/* Page filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Pages</label>
+              <Select value={selectedPageNames.length === 1 ? selectedPageNames[0] : "__all__"} onValueChange={(val) => setSelectedPageNames(val === "__all__" ? [] : [val])}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Sans filtre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">Sans filtre</SelectItem>
+                  {availablePages.map(pageName => (
+                    <SelectItem key={pageName} value={pageName}>
+                      {pageName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Thematic filter */}

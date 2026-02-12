@@ -117,6 +117,7 @@ export const appRouter = router({
         z.object({
           reportId: z.number().optional(),
           reportIds: z.array(z.number()).optional(),
+          pageNames: z.array(z.string()).optional(),
           thematicNumber: z.number().optional(),
           criterionReference: z.string().optional(),
           impact: z.enum(["Bloquant", "Majeur", "Mineur"]).optional(),

@@ -1,4 +1,4 @@
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, rgaaThematics, rgaaCriteria, auditReports, findings, findingTemplates } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -388,6 +388,7 @@ export async function updateAuditReportSiteData(
 export async function getEnrichedFindings(filters: {
   reportId?: number; // Kept for backward compatibility if needed, but we'll use reportIds mainly
   reportIds?: number[];
+  pageNames?: string[];
   thematicNumber?: number;
   impact?: "Bloquant" | "Majeur" | "Mineur";
   criterionReference?: string;
@@ -401,6 +402,15 @@ export async function getEnrichedFindings(filters: {
   }
   if (filters.reportIds !== undefined && filters.reportIds.length > 0) {
     conditions.push(inArray(findings.reportId, filters.reportIds));
+  }
+  if (filters.pageNames !== undefined && filters.pageNames.length > 0) {
+    // Filter by page names using LIKE for partial matches
+    // We combine conditions with OR so if any page matches, the finding is returned
+    const pageConditions = filters.pageNames.map(pageName => 
+      // MySQL LIKE is case-insensitive by default with most collations
+      sql`${findings.location} LIKE ${`%${pageName}%`}`
+    );
+    conditions.push(or(...pageConditions));
   }
   if (filters.thematicNumber !== undefined) {
     conditions.push(eq(findings.thematicNumber, filters.thematicNumber));
