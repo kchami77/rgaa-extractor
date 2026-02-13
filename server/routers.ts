@@ -182,6 +182,13 @@ export const appRouter = router({
           // Parser le document Word
           const parseResult = await parseAuditReportBuffer(fileBuffer);
 
+          // Afficher les diagnostics du parser dans les logs serveur
+          for (const diag of parseResult.diagnostics) {
+            if (diag.level === "error") console.error(`[Parser] ${diag.message}`);
+            else if (diag.level === "warn") console.warn(`[Parser] ${diag.message}`);
+            else console.log(`[Parser] ${diag.message}`);
+          }
+
           // Sauvegarder les données du site (URL + pages auditées)
           if (parseResult.siteUrl || parseResult.auditedPages.length > 0) {
             await updateAuditReportSiteData(
