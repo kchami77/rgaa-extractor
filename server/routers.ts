@@ -19,6 +19,7 @@ import {
   updateAuditReportFindingsCount,
   updateAuditReportSiteData,
   deleteAuditReport,
+  checkDuplicateReport,
 } from "./db";
 import { storagePut, storageGet, storageDelete } from "./storage";
 import { parseAuditReportBuffer } from "./parser";
@@ -77,6 +78,13 @@ export const appRouter = router({
             message: "Failed to upload report",
           });
         }
+      }),
+
+    // Vérifier si un rapport existe déjà
+    checkReportExists: protectedProcedure
+      .input(z.object({ fileName: z.string() }))
+      .query(async ({ input, ctx }) => {
+        return await checkDuplicateReport(ctx.user.id, input.fileName);
       }),
 
     // Récupérer les rapports d'un utilisateur

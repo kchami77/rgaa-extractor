@@ -4,6 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface UploadSectionProps {
   onUploadSuccess?: () => void;
@@ -12,7 +23,9 @@ interface UploadSectionProps {
 export default function UploadSection({ onUploadSuccess }: UploadSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [duplicateFile, setDuplicateFile] = useState<{ file: File; existingReport: any } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const utils = trpc.useUtils();
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -39,6 +52,34 @@ export default function UploadSection({ onUploadSuccess }: UploadSectionProps) {
     }
   };
 
+  const performUpload = async (file: File) => {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", file.name);
+
+      const response = await fetch("/api/audit/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Upload failed: ${response.statusText}`);
+      }
+
+      toast.success(`${file.name} uploadé avec succès`);
+      onUploadSuccess?.();
+    } catch (error) {
+      console.error("Upload error:", error);
+      const message = error instanceof Error ? error.message : "Erreur lors de l'upload";
+      toast.error(`Erreur: ${message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleFiles = async (files: FileList) => {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -55,34 +96,18 @@ export default function UploadSection({ onUploadSuccess }: UploadSectionProps) {
         continue;
       }
 
-      setIsUploading(true);
-
+      // Vérifier si le fichier existe déjà
       try {
-        // Utiliser FormData pour envoyer le fichier directement
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("fileName", file.name);
-
-        // Envoyer via fetch au lieu de tRPC pour les fichiers binaires
-        const response = await fetch("/api/audit/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Upload failed: ${response.statusText}`);
+        const existingReport = await utils.audit.checkReportExists.fetch({ fileName: file.name });
+        if (existingReport) {
+          setDuplicateFile({ file, existingReport });
+          break; // On arrête pour demander confirmation (on ne traite qu'un doublon à la fois pour la simplicité)
         }
-
-        toast.success(`${file.name} uploadé avec succès`);
-        onUploadSuccess?.();
       } catch (error) {
-        console.error("Upload error:", error);
-        const message = error instanceof Error ? error.message : "Erreur lors de l'upload";
-        toast.error(`Erreur: ${message}`);
-      } finally {
-        setIsUploading(false);
+        console.error("Check duplicate error:", error);
       }
+
+      await performUpload(file);
     }
   };
 
@@ -152,6 +177,36 @@ export default function UploadSection({ onUploadSuccess }: UploadSectionProps) {
           avec la section "Descriptions des erreurs d'accessibilité".
         </AlertDescription>
       </Alert>
+
+      <AlertDialog open={!!duplicateFile} onOpenChange={(open) => !open && setDuplicateFile(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fichier déjà existant</AlertDialogTitle>
+            <AlertDialogDescription>
+              Un rapport nommé <strong>{duplicateFile?.file.name}</strong> a déjà été importé
+              le {duplicateFile?.existingReport?.createdAt 
+                ? new Date(duplicateFile.existingReport.createdAt).toLocaleDateString("fr-FR") 
+                : "écemment"}.
+              <br /><br />
+              Voulez-vous quand même l'importer ? Cela créera un nouveau rapport distinct.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => {
+                if (duplicateFile) {
+                  performUpload(duplicateFile.file);
+                  setDuplicateFile(null);
+                }
+              }}
+            >
+              Importer quand même
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

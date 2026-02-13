@@ -27,6 +27,7 @@ export {
   updateAuditReportFindingsCount,
   updateAuditReportSiteData,
   deleteAuditReport,
+  checkDuplicateReport,
 } from "./repositories/reportRepository";
 export {
   createFinding,

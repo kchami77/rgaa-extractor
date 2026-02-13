@@ -116,3 +116,19 @@ export async function deleteAuditReport(reportId: number) {
   // Supprimer le rapport
   await db.delete(auditReports).where(eq(auditReports.id, reportId));
 }
+
+/**
+ * Vérifie si un rapport avec le même nom de fichier existe déjà pour cet utilisateur
+ */
+export async function checkDuplicateReport(userId: number, fileName: string) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.select()
+    .from(auditReports)
+    .where(eq(auditReports.userId, userId))
+    .where(eq(auditReports.fileName, fileName))
+    .limit(1);
+
+  return result.length > 0 ? result[0] : null;
+}
