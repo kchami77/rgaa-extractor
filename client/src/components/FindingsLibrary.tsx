@@ -315,7 +315,7 @@ export default function FindingsLibrary() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Rapports</label>
               <MultiSelect
                 options={reports?.filter(r => r.status === "completed").map(r => ({
-                  label: r.fileName.replace(/^\d+-/, '').replace(/\.docx$/i, ''),
+                  label: extractSiteName(r.fileName),
                   value: r.id.toString()
                 })) || []}
                 selected={selectedReportIds}
@@ -507,4 +507,29 @@ export default function FindingsLibrary() {
       )}
     </div>
   );
+}
+
+/**
+ * Extrait le nom du site lisible depuis le nom de fichier du rapport.
+ * "1234567890-_publipostage_Cinémas_Du_Grand_Paris_Rapport-RGAA-4.1-Initial_202602JJ_STRATIS.docx"
+ *  → "Cinémas Du Grand Paris"
+ */
+function extractSiteName(fileName: string): string {
+  let name = fileName
+    .replace(/^\d+-/, "")         // supprimer le timestamp
+    .replace(/\.docx$/i, "");      // supprimer l'extension
+
+  // Supprimer le préfixe _publipostage_
+  name = name.replace(/^_?publipostage_/i, "");
+
+  // Supprimer le suffixe _Rapport-RGAA-... et tout ce qui suit
+  name = name.replace(/_Rapport[-_]RGAA.*$/i, "");
+
+  // Supprimer un éventuel suffixe _STRATIS restant
+  name = name.replace(/_STRATIS$/i, "");
+
+  // Nettoyer les underscores → espaces
+  name = name.replace(/_/g, " ").trim();
+
+  return name || fileName;
 }
