@@ -57,7 +57,11 @@ async function startServer() {
       }
 
       // Parser FormData avec busboy
-      const bb = Busboy({ headers: req.headers, limits: { fileSize: 50 * 1024 * 1024 } });
+      const bb = Busboy({ 
+        headers: req.headers, 
+        limits: { fileSize: 50 * 1024 * 1024 },
+        defParamCharset: "utf8"
+      });
       let fileName = "report.docx";
       let fileBuffer: Buffer | null = null;
 
