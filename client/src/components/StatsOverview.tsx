@@ -1,38 +1,90 @@
+import { useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { AlertCircle, TrendingUp, FileText } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { AlertCircle, TrendingUp, FileText, Loader2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
-const COLORS = {
+const IMPACT_COLORS: Record<string, string> = {
   Bloquant: "#ef4444",
   Majeur: "#f97316",
   Mineur: "#eab308",
 };
 
+const THEMATIC_NAMES: Record<number, string> = {
+  1: "Images",
+  2: "Cadres",
+  3: "Couleurs",
+  4: "Multimédia",
+  5: "Tableaux",
+  6: "Liens",
+  7: "Scripts",
+  8: "Éléments obligatoires",
+  9: "Structuration",
+  10: "Présentation",
+  11: "Formulaires",
+  12: "Navigation",
+  13: "Consultation",
+};
+
 export default function StatsOverview() {
   const { data: reports } = trpc.audit.getUserReports.useQuery();
+  const { data: findings, isLoading } = trpc.audit.getEnrichedFindings.useQuery({});
 
   const totalReports = reports?.length || 0;
-  const totalFindings = reports?.reduce((sum, r) => sum + (r.findingsCount || 0), 0) || 0;
+  const totalFindings = findings?.length || 0;
 
-  // Données pour le graphique des impacts
-  const impactData = [
-    { name: "Bloquant", value: 12, fill: COLORS.Bloquant },
-    { name: "Majeur", value: 28, fill: COLORS.Majeur },
-    { name: "Mineur", value: 15, fill: COLORS.Mineur },
-  ];
+  // Données dynamiques pour le graphique des impacts
+  const impactData = useMemo(() => {
+    if (!findings || findings.length === 0) return [];
+    const counts: Record<string, number> = { Bloquant: 0, Majeur: 0, Mineur: 0 };
+    findings.forEach(f => {
+      if (f.impact && counts[f.impact] !== undefined) {
+        counts[f.impact]++;
+      }
+    });
+    return Object.entries(counts)
+      .filter(([, value]) => value > 0)
+      .map(([name, value]) => ({
+        name,
+        value,
+        fill: IMPACT_COLORS[name] || "#8884d8",
+      }));
+  }, [findings]);
 
-  // Données pour le graphique des thématiques
-  const thematicData = [
-    { name: "1. Images", constats: 12 },
-    { name: "2. Cadres", constats: 5 },
-    { name: "3. Couleurs", constats: 8 },
-    { name: "4. Multimédia", constats: 3 },
-    { name: "5. Tableaux", constats: 6 },
-    { name: "6. Liens", constats: 9 },
-    { name: "7. Scripts", constats: 4 },
-    { name: "8. Éléments obligatoires", constats: 7 },
-  ];
+  // Données dynamiques pour le graphique des thématiques
+  const thematicData = useMemo(() => {
+    if (!findings || findings.length === 0) return [];
+    const counts = new Map<number, number>();
+    findings.forEach(f => {
+      if (f.thematicNumber != null) {
+        counts.set(f.thematicNumber, (counts.get(f.thematicNumber) || 0) + 1);
+      }
+    });
+    return Array.from(counts.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([num, count]) => ({
+        name: `${num}. ${THEMATIC_NAMES[num] || `Thématique ${num}`}`,
+        constats: count,
+      }));
+  }, [findings]);
+
+  // Nombre de thématiques réellement couvertes
+  const uniqueThematics = useMemo(() => {
+    if (!findings) return 0;
+    const set = new Set<number>();
+    findings.forEach(f => {
+      if (f.thematicNumber != null) set.add(f.thematicNumber);
+    });
+    return set.size;
+  }, [findings]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -68,7 +120,7 @@ export default function StatsOverview() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold text-gray-900">13</div>
+              <div className="text-3xl font-bold text-gray-900">{uniqueThematics}</div>
               <AlertCircle className="w-8 h-8 text-orange-600 opacity-20" />
             </div>
           </CardContent>
@@ -76,55 +128,57 @@ export default function StatsOverview() {
       </div>
 
       {/* Graphiques */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Graphique des impacts */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribution par impact</CardTitle>
-            <CardDescription>Répartition des constats selon leur niveau d'impact</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={impactData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {impactData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      {totalFindings > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Graphique des impacts */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Distribution par impact</CardTitle>
+              <CardDescription>Répartition des constats selon leur niveau d'impact</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={impactData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {impactData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        {/* Graphique des thématiques */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Constats par thématique</CardTitle>
-            <CardDescription>Nombre de constats détectés par thématique</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={thematicData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} interval={0} tick={{ fontSize: 12 }} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="constats" fill="#4f46e5" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Graphique des thématiques */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Constats par thématique</CardTitle>
+              <CardDescription>Nombre de constats détectés par thématique</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={thematicData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} interval={0} tick={{ fontSize: 12 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="constats" fill="#4f46e5" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
