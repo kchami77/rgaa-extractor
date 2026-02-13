@@ -298,6 +298,28 @@ export async function createFinding(data: {
   return result;
 }
 
+type FindingInput = Parameters<typeof createFinding>[0];
+
+/**
+ * Insère un lot de constats dans une transaction MySQL.
+ * Si une insertion échoue, tout le lot est annulé (rollback).
+ * Retourne le nombre de constats insérés.
+ */
+export async function createFindingsBatch(items: FindingInput[]): Promise<number> {
+  const db = await getDb();
+  if (!db || items.length === 0) return 0;
+
+  let count = 0;
+  await db.transaction(async (tx) => {
+    for (const data of items) {
+      await tx.insert(findings).values(data);
+      count++;
+    }
+  });
+
+  return count;
+}
+
 /**
  * Récupère tous les constats d'un rapport
  */

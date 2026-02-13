@@ -13,7 +13,7 @@ import {
   getAllThematics,
   getAllCriteria,
   initializeRgaaReferential,
-  createFinding,
+  createFindingsBatch,
 
   updateAuditReportStatus,
   updateAuditReportFindingsCount,
@@ -195,12 +195,12 @@ export const appRouter = router({
           const allCriteria = await getAllCriteria();
           const criteriaMap = new Map(allCriteria.map(c => [c.reference, c]));
 
-          // Sauvegarder les constats en base de données
-          let findingsCount = 0;
-          for (const finding of parseResult.findings) {
-            const criterion = criteriaMap.get(finding.criterionReference);
-            if (criterion) {
-              await createFinding({
+          // Préparer les constats à insérer
+          const findingsToInsert = parseResult.findings
+            .map(finding => {
+              const criterion = criteriaMap.get(finding.criterionReference);
+              if (!criterion) return null;
+              return {
                 reportId: input.reportId,
                 criterionId: criterion.id,
                 thematicId: criterion.thematicId,
@@ -213,10 +213,12 @@ export const appRouter = router({
                 solution: finding.solution,
                 thematicNumber: finding.thematicNumber,
                 criterionReference: finding.criterionReference,
-              });
-              findingsCount++;
-            }
-          }
+              };
+            })
+            .filter((f): f is NonNullable<typeof f> => f !== null);
+
+          // Insérer en une seule transaction (rollback automatique si erreur)
+          const findingsCount = await createFindingsBatch(findingsToInsert);
 
           // Mettre à jour le statut en "completed" et le nombre de constats
           await updateAuditReportStatus(input.reportId, "completed");
