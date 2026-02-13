@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, AlertCircle, AlertTriangle, Info, ExternalLink, ChevronDown, ChevronRight, FileText, Globe, LayoutList, Layers, FolderOpen } from "lucide-react";
+import { Loader2, AlertCircle, AlertTriangle, Info, ExternalLink, ChevronDown, ChevronRight, FileText, Globe, LayoutList, Layers, FolderOpen, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { MultiSelect } from "@/components/ui/multi-select";
 
@@ -16,6 +17,7 @@ export default function FindingsLibrary() {
   const [selectedThematic, setSelectedThematic] = useState<string>("all");
   const [selectedImpact, setSelectedImpact] = useState<string>("all");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: findings, isLoading } = trpc.audit.getEnrichedFindings.useQuery({
     reportIds: selectedReportIds.map(id => parseInt(id)),
@@ -26,13 +28,40 @@ export default function FindingsLibrary() {
 
   const { data: reports } = trpc.audit.getUserReports.useQuery();
 
+  // Helper: strip accents for search matching
+  const stripAccents = useCallback((s: string) =>
+    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(), []);
+
+  // Client-side text search filtering
+  const filteredFindings = useMemo(() => {
+    if (!findings) return [];
+    if (!searchQuery.trim()) return findings;
+
+    const queryWords = stripAccents(searchQuery.trim()).split(/\s+/).filter(Boolean);
+    
+    return findings.filter(f => {
+      const haystack = stripAccents([
+        f.finding,
+        f.solution,
+        f.location,
+        f.criterionReference,
+        f.criterionLabel,
+        f.contentType,
+        f.userProblem,
+        f.subThematic,
+      ].filter(Boolean).join(" "));
+      
+      // All words must appear somewhere in the text
+      return queryWords.every(word => haystack.includes(word));
+    });
+  }, [findings, searchQuery, stripAccents]);
+
   // Extract unique pages from findings' location field
   const availablePages = useMemo(() => {
     if (!findings) return [];
 
-    // Helper: strip all accents for comparison
-    const stripAccents = (s: string) =>
-      s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    // Reuse outer stripAccents
+    const strip = stripAccents;
 
     // Canonical page names in the exact desired order
     const canonicalPages = [
@@ -89,7 +118,7 @@ export default function FindingsLibrary() {
         name = name.trim();
 
         // Strip accents for matching
-        const stripped = stripAccents(name);
+        const stripped = strip(name);
 
         // Try to match against canonical rules
         let matched = false;
@@ -117,20 +146,20 @@ export default function FindingsLibrary() {
       if (indexB !== -1) return 1;
       return a.localeCompare(b);
     });
-  }, [findings]);
+  }, [findings, stripAccents]);
 
-  // Impact stats
+  // Impact stats (based on filtered findings)
   const impactStats = useMemo(() => {
-    if (!findings) return { total: 0, bloquant: 0, majeur: 0, mineur: 0 };
+    if (!filteredFindings.length) return { total: 0, bloquant: 0, majeur: 0, mineur: 0 };
     return {
-      total: findings.length,
-      bloquant: findings.filter(f => f.impact === "Bloquant").length,
-      majeur: findings.filter(f => f.impact === "Majeur").length,
-      mineur: findings.filter(f => f.impact === "Mineur").length,
+      total: filteredFindings.length,
+      bloquant: filteredFindings.filter(f => f.impact === "Bloquant").length,
+      majeur: filteredFindings.filter(f => f.impact === "Majeur").length,
+      mineur: filteredFindings.filter(f => f.impact === "Mineur").length,
     };
-  }, [findings]);
+  }, [filteredFindings]);
 
-  // Unique thematics
+  // Unique thematics — use raw findings so filter dropdown always shows all options
   const uniqueThematics = useMemo(() => {
     if (!findings) return [];
     const map = new Map<number, string>();
@@ -144,9 +173,9 @@ export default function FindingsLibrary() {
 
   // Group by criterion
   const groupedByCriterion = useMemo(() => {
-    if (!findings) return [];
-    const map = new Map<string, typeof findings>();
-    findings.forEach(f => {
+    if (!filteredFindings.length) return [];
+    const map = new Map<string, typeof filteredFindings>();
+    filteredFindings.forEach(f => {
       const key = f.criterionReference || "?";
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(f);
@@ -155,13 +184,13 @@ export default function FindingsLibrary() {
       const [na, nb] = [parseFloat(a[0]), parseFloat(b[0])];
       return na - nb;
     });
-  }, [findings]);
+  }, [filteredFindings]);
 
   // Group by report
   const groupedByReport = useMemo(() => {
-    if (!findings) return [];
-    const map = new Map<number, { name: string; siteUrl: string | null; auditedPages: any[]; findings: typeof findings }>();
-    findings.forEach(f => {
+    if (!filteredFindings.length) return [];
+    const map = new Map<number, { name: string; siteUrl: string | null; auditedPages: any[]; findings: typeof filteredFindings }>();
+    filteredFindings.forEach(f => {
       const reportId = f.reportId;
       if (!map.has(reportId)) {
         let pages: any[] = [];
@@ -178,7 +207,7 @@ export default function FindingsLibrary() {
       map.get(reportId)!.findings.push(f);
     });
     return Array.from(map.entries());
-  }, [findings]);
+  }, [filteredFindings]);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups(prev => {
@@ -248,6 +277,33 @@ export default function FindingsLibrary() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Search bar */}
+          <div className="relative mb-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Rechercher par mots-clés... (ex: lien évitement, attribut alt, menu focus)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          {searchQuery.trim() && (
+            <div className="mb-4 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{filteredFindings.length}</span> résultat{filteredFindings.length !== 1 ? 's' : ''} trouvé{filteredFindings.length !== 1 ? 's' : ''}
+              {findings && filteredFindings.length < findings.length && (
+                <span> sur {findings.length} constats</span>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Report filter */}
             <div>
@@ -319,7 +375,7 @@ export default function FindingsLibrary() {
       </Card>
 
       {/* Findings display */}
-      {findings && findings.length > 0 ? (
+      {filteredFindings.length > 0 ? (
         <>
           {viewMode !== "flat" && (
             <div className="flex gap-2 justify-end">
@@ -354,7 +410,7 @@ export default function FindingsLibrary() {
                     {expanded && (
                       <div className="border-t divide-y">
                         {items.map(f => (
-                          <FindingRow key={f.id} finding={f} showReport />
+                          <FindingRow key={f.id} finding={f} showReport searchQuery={searchQuery} />
                         ))}
                       </div>
                     )}
@@ -416,7 +472,7 @@ export default function FindingsLibrary() {
                         )}
                         <div className="divide-y">
                           {group.findings.map(f => (
-                            <FindingRow key={f.id} finding={f} showReport={false} />
+                            <FindingRow key={f.id} finding={f} showReport={false} searchQuery={searchQuery} />
                           ))}
                         </div>
                       </div>
@@ -429,9 +485,9 @@ export default function FindingsLibrary() {
 
           {viewMode === "flat" && (
             <div className="space-y-3">
-              {findings.map(f => (
+              {filteredFindings.map(f => (
                 <Card key={f.id} className="overflow-hidden">
-                  <FindingRow finding={f} showReport />
+                  <FindingRow finding={f} showReport searchQuery={searchQuery} />
                 </Card>
               ))}
             </div>
@@ -486,7 +542,7 @@ function ImpactBadges({ items }: { items: any[] }) {
   );
 }
 
-function FindingRow({ finding, showReport }: { finding: any; showReport: boolean }) {
+function FindingRow({ finding, showReport, searchQuery = "" }: { finding: any; showReport: boolean; searchQuery?: string }) {
   const impactConfig = {
     Bloquant: { icon: <AlertCircle className="w-3.5 h-3.5" />, bg: "bg-red-100 text-red-800", dot: "bg-red-500" },
     Majeur: { icon: <AlertTriangle className="w-3.5 h-3.5" />, bg: "bg-orange-100 text-orange-800", dot: "bg-orange-500" },
@@ -554,11 +610,11 @@ function FindingRow({ finding, showReport }: { finding: any; showReport: boolean
           )}
 
           {/* Finding text */}
-          <p className="text-sm text-gray-800">{finding.finding}</p>
+          <p className="text-sm text-gray-800"><HighlightText text={finding.finding} query={searchQuery} /></p>
 
           {/* Solution */}
           {finding.solution && (
-            <p className="text-sm text-green-700 italic">💡 {finding.solution}</p>
+            <p className="text-sm text-green-700 italic">💡 <HighlightText text={finding.solution} query={searchQuery} /></p>
           )}
         </div>
       </div>
@@ -583,4 +639,65 @@ function getThematicName(number: number): string {
     13: "Consultation",
   };
   return thematics[number] || `Thématique ${number}`;
+}
+
+/** Highlights search words in text with a yellow background */
+function HighlightText({ text, query }: { text: string; query: string }) {
+  if (!text || !query?.trim()) return <>{text}</>;
+
+  // Strip accents helper
+  const strip = (s: string) =>
+    s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  const words = strip(query).split(/\s+/).filter(w => w.length >= 1);
+  if (words.length === 0) return <>{text}</>;
+
+  // Build a regex to find all matching portions in the original text
+  // We match on the stripped version but capture from the original
+  const strippedText = strip(text);
+  const parts: Array<{ start: number; end: number }> = [];
+
+  for (const word of words) {
+    let idx = 0;
+    while (idx < strippedText.length) {
+      const found = strippedText.indexOf(word, idx);
+      if (found === -1) break;
+      parts.push({ start: found, end: found + word.length });
+      idx = found + 1;
+    }
+  }
+
+  if (parts.length === 0) return <>{text}</>;
+
+  // Merge overlapping parts
+  parts.sort((a, b) => a.start - b.start);
+  const merged: typeof parts = [parts[0]];
+  for (let i = 1; i < parts.length; i++) {
+    const last = merged[merged.length - 1];
+    if (parts[i].start <= last.end) {
+      last.end = Math.max(last.end, parts[i].end);
+    } else {
+      merged.push(parts[i]);
+    }
+  }
+
+  // Build JSX with highlights
+  const result: React.ReactNode[] = [];
+  let cursor = 0;
+  for (const { start, end } of merged) {
+    if (cursor < start) {
+      result.push(<span key={`t${cursor}`}>{text.slice(cursor, start)}</span>);
+    }
+    result.push(
+      <mark key={`h${start}`} className="bg-yellow-200 text-inherit rounded-sm px-0.5">
+        {text.slice(start, end)}
+      </mark>
+    );
+    cursor = end;
+  }
+  if (cursor < text.length) {
+    result.push(<span key={`t${cursor}`}>{text.slice(cursor)}</span>);
+  }
+
+  return <>{result}</>;
 }
