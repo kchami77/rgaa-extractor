@@ -8,7 +8,12 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      let url = process.env.DATABASE_URL!;
+      // Forcer le charset UTF-8 pour éviter les problèmes d'encodage (è→Ã¨)
+      if (!url.includes("charset=")) {
+        url += (url.includes("?") ? "&" : "?") + "charset=utf8mb4";
+      }
+      _db = drizzle(url);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
