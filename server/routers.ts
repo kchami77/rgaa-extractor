@@ -14,7 +14,7 @@ import {
   getAllCriteria,
   initializeRgaaReferential,
   createFinding,
-  getCriterionByReference,
+
   updateAuditReportStatus,
   updateAuditReportFindingsCount,
   updateAuditReportSiteData,
@@ -191,10 +191,14 @@ export const appRouter = router({
             );
           }
 
+          // Charger tous les critères en une seule requête (élimine le N+1)
+          const allCriteria = await getAllCriteria();
+          const criteriaMap = new Map(allCriteria.map(c => [c.reference, c]));
+
           // Sauvegarder les constats en base de données
           let findingsCount = 0;
           for (const finding of parseResult.findings) {
-            const criterion = await getCriterionByReference(finding.criterionReference);
+            const criterion = criteriaMap.get(finding.criterionReference);
             if (criterion) {
               await createFinding({
                 reportId: input.reportId,
