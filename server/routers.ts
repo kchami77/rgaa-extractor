@@ -12,6 +12,9 @@ import {
   getEnrichedFindings,
   getAllThematics,
   getAllCriteria,
+  getCriterionByReference,
+  getThematicByNumber,
+  getCriteriaByThematic,
   initializeRgaaReferential,
   createFindingsBatch,
 
@@ -20,6 +23,9 @@ import {
   updateAuditReportSiteData,
   deleteAuditReport,
   checkDuplicateReport,
+
+  searchFindingTemplates,
+  getFindingTemplatesByCriterion,
 } from "./db";
 import { storagePut, storageGet, storageDelete } from "./storage";
 import { parseAuditReportBuffer } from "./parser";
@@ -289,6 +295,50 @@ export const appRouter = router({
             message: "Failed to delete report",
           });
         }
+      }),
+  }),
+
+  criteria: router({
+    list: publicProcedure.query(async () => {
+      return await getAllCriteria();
+    }),
+    getByReference: publicProcedure
+      .input(z.object({ reference: z.string() }))
+      .query(async ({ input }) => {
+        return await getCriterionByReference(input.reference);
+      }),
+    listThematics: publicProcedure.query(async () => {
+      return await getAllThematics();
+    }),
+    getThematic: publicProcedure
+      .input(z.object({ number: z.number() }))
+      .query(async ({ input }) => {
+        return await getThematicByNumber(input.number);
+      }),
+    getByThematic: publicProcedure
+      .input(z.object({ thematicId: z.number() }))
+      .query(async ({ input }) => {
+        return await getCriteriaByThematic(input.thematicId);
+      }),
+  }),
+
+  findingTemplates: router({
+    search: publicProcedure
+      .input(
+        z.object({
+          q: z.string().optional(),
+          criterionId: z.number().optional(),
+          impact: z.enum(["Bloquant", "Majeur", "Mineur"]).optional(),
+          status: z.enum(["draft", "approved", "deprecated"]).optional(),
+        })
+      )
+      .query(async ({ input }) => {
+        return await searchFindingTemplates(input);
+      }),
+    getByCriterion: publicProcedure
+      .input(z.object({ criterionReference: z.string() }))
+      .query(async ({ input }) => {
+        return await getFindingTemplatesByCriterion(input.criterionReference);
       }),
   }),
 });

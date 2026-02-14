@@ -38,3 +38,7 @@ export {
   getStatsByImpact,
   getEnrichedFindings,
 } from "./repositories/findingRepository";
+export {
+  searchFindingTemplates,
+  getFindingTemplatesByCriterion,
+} from "./repositories/templateRepository";

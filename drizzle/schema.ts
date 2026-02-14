@@ -155,6 +155,10 @@ export const findingTemplates = mysqlTable("finding_templates", {
   occurrenceCount: int("occurrence_count").default(1).notNull(),
   /** Statut d'approbation (draft, approved, deprecated) */
   status: mysqlEnum("status", ["draft", "approved", "deprecated"]).default("draft").notNull(),
+  /** Niveau de confiance (0-100) ou labels simples */
+  confidenceLevel: int("confidence_level").default(0),
+  /** Contexte d'usage optionnel pour aider l'IA */
+  usageContext: text("usage_context"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

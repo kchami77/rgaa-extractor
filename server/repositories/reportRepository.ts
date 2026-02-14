@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { auditReports, findings } from "../../drizzle/schema";
 import { getDb } from "./connection";
 
@@ -126,8 +126,7 @@ export async function checkDuplicateReport(userId: number, fileName: string) {
 
   const result = await db.select()
     .from(auditReports)
-    .where(eq(auditReports.userId, userId))
-    .where(eq(auditReports.fileName, fileName))
+    .where(and(eq(auditReports.userId, userId), eq(auditReports.fileName, fileName)))
     .limit(1);
 
   return result.length > 0 ? result[0] : null;
