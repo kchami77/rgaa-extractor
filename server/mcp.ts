@@ -145,6 +145,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      {
+        name: "propose_deduplication",
+        description: "Analyser un constat spécifique pour trouver des modèles similaires dans la bibliothèque. Aide à fusionner les doublons sémantiques.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            findingText: { type: "string" },
+            criterionReference: { type: "string" },
+          },
+          required: ["findingText", "criterionReference"],
+        },
+      },
     ],
   };
 });
@@ -186,6 +198,29 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const findings = await caller.audit.getEnrichedFindings(args as any);
       return {
         content: [{ type: "text", text: JSON.stringify(findings, null, 2) }],
+      };
+    }
+
+    if (name === "propose_deduplication") {
+      const { findingText, criterionReference } = args as any;
+      
+      // 1. Récupérer les templates du critère
+      const templates = await caller.findingTemplates.getByCriterion({ criterionReference });
+      
+      // 2. Calculer la similitude sémantique (via utilitaire)
+      const { calculateSimilarity } = await import("./utils/deduplication");
+      const suggestions = templates
+        .map(t => ({
+          templateId: t.id,
+          finding: t.finding,
+          similarity: calculateSimilarity(findingText, t.finding),
+          status: t.status
+        }))
+        .filter(s => s.similarity > 0.6) // Seuil de pertinence
+        .sort((a, b) => b.similarity - a.similarity);
+
+      return {
+        content: [{ type: "text", text: JSON.stringify(suggestions, null, 2) }],
       };
     }
 

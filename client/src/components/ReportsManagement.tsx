@@ -174,9 +174,9 @@ export default function ReportsManagement() {
                     variant="ghost" 
                     size="sm"
                     onClick={() => handleDelete(report.id)}
-                    disabled={deleteReport.isLoading && deleteReport.variables?.reportId === report.id}
+                    disabled={deleteReport.isPending && deleteReport.variables?.reportId === report.id}
                   >
-                   {deleteReport.isLoading && deleteReport.variables?.reportId === report.id ? (
+                   {deleteReport.isPending && deleteReport.variables?.reportId === report.id ? (
                       <Loader2 className="w-4 h-4 animate-spin text-red-600" />
                     ) : (
                       <Trash2 className="w-4 h-4 text-red-600" />

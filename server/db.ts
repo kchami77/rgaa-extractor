@@ -18,6 +18,7 @@ export {
   getAllCriteria,
   getCriterionByReference,
   getCriteriaByThematic,
+  searchCriteria,
 } from "./repositories/referentialRepository";
 export {
   createAuditReport,
@@ -37,8 +38,15 @@ export {
   getStatsByThematic,
   getStatsByImpact,
   getEnrichedFindings,
+  searchSimilarFindings,
 } from "./repositories/findingRepository";
 export {
   searchFindingTemplates,
   getFindingTemplatesByCriterion,
+  getFindingTemplateBySignature,
+  upsertFindingTemplateFromFinding,
+  updateFindingTemplate,
+  syncTemplatesFromFindings,
+  bulkGeneralizeTemplates,
+  resetTemplateToOriginal,
 } from "./repositories/templateRepository";

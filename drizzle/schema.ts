@@ -126,6 +126,8 @@ export const findings = mysqlTable("findings", {
   thematicNumber: int("thematic_number"),
   /** Référence du critère (dénormalisé pour les requêtes) */
   criterionReference: varchar("criterion_reference", { length: 10 }),
+  /** ID du modèle générique associé (déduplication) */
+  templateId: int("template_id"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -159,6 +161,10 @@ export const findingTemplates = mysqlTable("finding_templates", {
   confidenceLevel: int("confidence_level").default(0),
   /** Contexte d'usage optionnel pour aider l'IA */
   usageContext: text("usage_context"),
+  /** Phrase d'origine du rapport Word (backup avant nettoyage) */
+  originalFinding: text("original_finding"),
+  /** Empreinte digitale unique du constat (normalisé + hash) */
+  signatureHash: varchar("signature_hash", { length: 64 }).unique(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -15,6 +15,13 @@
       "when": 1768000113554,
       "tag": "0001_amusing_power_pack",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1771164143485,
+      "tag": "0002_far_golden_guardian",
+      "breakpoints": true
     }
   ]
 }

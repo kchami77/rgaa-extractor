@@ -104,3 +104,62 @@ export async function getCriteriaByThematic(thematicId: number) {
     .where(eq(rgaaCriteria.thematicId, thematicId))
     .orderBy(rgaaCriteria.reference);
 }
+
+/**
+ * Recherche des critères par mots-clés avec ranking sémantique
+ */
+export async function searchCriteria(query: string) {
+  const db = await getDb();
+  if (!db || !query) return [];
+
+  const { like, or } = await import("drizzle-orm");
+  
+  // Stop words français courants à ignorer pour le matching technique
+  const stopWords = new Set(["pas", "sont", "est", "des", "pour", "aux", "dans", "une", "les", "sur", "avec", "tout", "tous", "chaque", "de", "le", "la", "les", "du", "au"]);
+  const words = query.toLowerCase()
+    .split(/[\s,',.!?;]+/)
+    .map(w => w.trim())
+    .filter(w => w.length >= 2 && !stopWords.has(w));
+  
+  if (words.length === 0) return [];
+
+  // Recherche large
+  const conditions = words.flatMap(word => [
+    like(rgaaCriteria.label, `%${word}%`),
+    like(rgaaCriteria.description, `%${word}%`)
+  ]);
+  
+  const results = await db.select().from(rgaaCriteria)
+    .where(or(...conditions))
+    .limit(30);
+
+  // Mots techniques à fort poids (sujets de l'audit)
+  const techSubjects = new Set(["bouton", "lien", "image", "logo", "formulaire", "champ", "vidéo", "iframe", "tableau", "liste", "menu", "titre", "focus", "clavier", "souris", "niveau", "structure", "hiérarchie", "ordre", "alt", "texte", "alternative", "contraste"]);
+  // Mots "méta" de l'audit à faible poids
+  const auditMetaWords = new Set(["pertinent", "visible", "accessible", "présent", "absent", "correct", "conforme", "chaque", "possède"]);
+
+  const rankedResults = results.map(c => {
+    let score = 0;
+    const labelLower = c.label.toLowerCase();
+    const descLower = (c.description || "").toLowerCase();
+    const text = (labelLower + " " + descLower).toLowerCase();
+    
+    words.forEach(word => {
+      if (text.includes(word)) {
+        let weight = word.length > 5 ? 3 : 1;
+        if (techSubjects.has(word)) weight += 10;
+        if (auditMetaWords.has(word)) weight = 1;
+
+        score += weight;
+        if (labelLower.includes(word)) {
+            score += techSubjects.has(word) ? 15 : 5;
+        }
+      }
+    });
+
+    return { ...c, matchScore: score };
+  })
+  .sort((a, b) => b.matchScore - a.matchScore);
+
+  return rankedResults;
+}

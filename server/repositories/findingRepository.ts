@@ -182,3 +182,30 @@ export async function getEnrichedFindings(filters: {
   }
   return await query.orderBy(findings.thematicNumber, findings.criterionReference);
 }
+
+/**
+ * Recherche des constats similaires par mots-clés
+ */
+export async function searchSimilarFindings(query: string, criterionReference: string) {
+  const db = await getDb();
+  if (!db || !query) return [];
+
+  const { like, and } = await import("drizzle-orm");
+  const words = query.toLowerCase().split(/[\s,',.!?;]+/).filter(w => w.length >= 3);
+  
+  // Si le draft est trop court, on cherche juste par critère
+  if (words.length === 0) {
+    return await db.select().from(findings)
+      .where(eq(findings.criterionReference, criterionReference))
+      .limit(5);
+  }
+
+  const conditions = words.map(word => like(findings.finding, `%${word}%`));
+  
+  return await db.select().from(findings)
+    .where(and(
+      eq(findings.criterionReference, criterionReference),
+      ...conditions
+    ))
+    .limit(10);
+}
