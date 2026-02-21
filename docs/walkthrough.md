@@ -32,6 +32,8 @@ Le **RGAA Knowledge Hub** transforme l'application d'un simple extracteur de don
 3. [🧩 Structure du Code](#-4-structure-du-code)
 4. [🛠️ Développement par Blocs](#️-5-développement-par-blocs)
 5. [🛡️ Qualité & Résilience](#️-6-qualité--résilience)
+6. [🛠️ Commandes Utiles & Maintenance](#️-6-commandes-utiles--maintenance)
+7. [🔮 Évolutions Futures](#-7-évolutions-futures)
 
 ---
 
@@ -161,6 +163,18 @@ Le projet a subi une **Double Review** systématique :
 
 > [!TIP]
 > Pour vérifier l'intégrité du code à tout moment, lancez : `pnpm check` (ou `tsc --noEmit`).
+
+---
+
+## 🛠️ 6. Commandes Utiles & Maintenance
+
+| Action | Commande |
+|:--- |:--- |
+| **Lancement Dev** | `pnpm dev` |
+| **Vérification Types** | `pnpm check` |
+| **Nouvelle Migration** | `pnpm db:push` |
+| **Formatage Code** | `pnpm format` |
+| **Installer Chromium** | `pnpm exec playwright install chromium` |
 
 ---
 
