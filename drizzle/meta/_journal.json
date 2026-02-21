@@ -22,6 +22,13 @@
       "when": 1771164143485,
       "tag": "0002_far_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1771647024685,
+      "tag": "0003_tired_kinsey_walden",
+      "breakpoints": true
     }
   ]
 }

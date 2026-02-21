@@ -7,4 +7,9 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  // Hub — valeurs initiales/fallback (remplacés par hub_settings en BDD)
+  openRouterApiKey: process.env.OPENROUTER_API_KEY ?? "",
+  openAiApiKey: process.env.OPENAI_API_KEY ?? "",
+  ollamaHost: process.env.OLLAMA_HOST ?? "http://localhost:11434",
+  chromaPath: process.env.CHROMA_PATH ?? "./data/chromadb",
 };

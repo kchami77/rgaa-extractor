@@ -124,6 +124,9 @@ importers:
       busboy:
         specifier: ^1.6.0
         version: 1.6.0
+      chromadb:
+        specifier: ^3.3.1
+        version: 3.3.1
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -2733,6 +2736,41 @@ packages:
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
     engines: {node: '>=18'}
+
+  chromadb-js-bindings-darwin-arm64@1.3.1:
+    resolution: {integrity: sha512-MMo+TX8tRrhy/0KGrA30kVTZ+EwrRoXRSQA7EGLuKW6FTEVX7hbF5l0EFWgDTw6YPX/KY2ySYNQH3VFwRyxYFA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  chromadb-js-bindings-darwin-x64@1.3.1:
+    resolution: {integrity: sha512-zboZ29wtP7vrevfYhNXFToSM9sTaXP+KALYF4B6wJNp4jymBRSAzhAsHBrVmAJQxgPEJatoODAWqsVxaGLYkog==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  chromadb-js-bindings-linux-arm64-gnu@1.3.1:
+    resolution: {integrity: sha512-JPzoIy5vb4Gzu7kZnCkcMtsv+HPx/LWBFu72IDbnkUp8UleNyXup7fVX/tUvwHq+OPtj7ZB4YWwiP3SzKIWEgA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  chromadb-js-bindings-linux-x64-gnu@1.3.1:
+    resolution: {integrity: sha512-nQvVhmHs2XXbzA+Xka8A4UMiyMlk86AFmiy1Pt+kzQkuJT5vOMKOcgJW/Nh2m0CtEjkzvj4Mxr2/31BiLil7Hg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  chromadb-js-bindings-win32-x64-msvc@1.3.1:
+    resolution: {integrity: sha512-3B3WwT1aM9vxFZBqlDgnA+R025b8pOudGM4hEZTmxV2rHND3Hn7C87mQO5WsUMarOUmX4Sd1NlhC2ANKCIWfLw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  chromadb@3.3.1:
+    resolution: {integrity: sha512-EXBpPMlRbLXzcPupCRKzjzd2enml5ak3xOJKjX2DnfOhC+fZ2kk5tqQq90fG1GuvtM553P8b/Q+iM2aTP8KfZQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   chromium-bidi@14.0.0:
     resolution: {integrity: sha512-9gYlLtS6tStdRWzrtXaTMnqcM4dudNegMXJxkR0I/CXObHalYeYcAMPrL19eroNZHtJ8DQmu1E+ZNOYu/IXMXw==}
@@ -8150,6 +8188,31 @@ snapshots:
       fsevents: 2.3.3
 
   chownr@3.0.0: {}
+
+  chromadb-js-bindings-darwin-arm64@1.3.1:
+    optional: true
+
+  chromadb-js-bindings-darwin-x64@1.3.1:
+    optional: true
+
+  chromadb-js-bindings-linux-arm64-gnu@1.3.1:
+    optional: true
+
+  chromadb-js-bindings-linux-x64-gnu@1.3.1:
+    optional: true
+
+  chromadb-js-bindings-win32-x64-msvc@1.3.1:
+    optional: true
+
+  chromadb@3.3.1:
+    dependencies:
+      semver: 7.7.4
+    optionalDependencies:
+      chromadb-js-bindings-darwin-arm64: 1.3.1
+      chromadb-js-bindings-darwin-x64: 1.3.1
+      chromadb-js-bindings-linux-arm64-gnu: 1.3.1
+      chromadb-js-bindings-linux-x64-gnu: 1.3.1
+      chromadb-js-bindings-win32-x64-msvc: 1.3.1
 
   chromium-bidi@14.0.0(devtools-protocol@0.0.1566079):
     dependencies:

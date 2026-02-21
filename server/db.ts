@@ -50,3 +50,10 @@ export {
   bulkGeneralizeTemplates,
   resetTemplateToOriginal,
 } from "./repositories/templateRepository";
+export {
+  getAllSettings,
+  getSettingsByCategory,
+  getSetting,
+  setSetting,
+  seedDefaultSettings,
+} from "./repositories/settingsRepository";

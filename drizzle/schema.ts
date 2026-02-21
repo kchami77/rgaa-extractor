@@ -171,3 +171,25 @@ export const findingTemplates = mysqlTable("finding_templates", {
 
 export type FindingTemplate = typeof findingTemplates.$inferSelect;
 export type InsertFindingTemplate = typeof findingTemplates.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hub Settings — Configuration persistée du RGAA Knowledge Hub
+// Chaque paramètre est une ligne clé/valeur catégorisée.
+// Les variables .env servent de valeurs initiales/fallback uniquement.
+// ─────────────────────────────────────────────────────────────────────────────
+export const hubSettings = mysqlTable("hub_settings", {
+  /** Clé unique du paramètre (ex: "llm.model", "rag.topK") */
+  key: varchar("key", { length: 100 }).primaryKey(),
+  /** Valeur sérialisée en string (nombres, booléens inclus) */
+  value: text("value").notNull(),
+  /** Type de la valeur — pilote le rendu dans le menu Options */
+  type: mysqlEnum("type", ["string", "number", "boolean", "password", "select"]).default("string").notNull(),
+  /** Catégorie pour grouper les settings dans l'UI */
+  category: varchar("category", { length: 50 }).notNull(),
+  /** Description affichée dans le menu Options */
+  description: text("description"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type HubSetting = typeof hubSettings.$inferSelect;
+export type InsertHubSetting = typeof hubSettings.$inferInsert;
