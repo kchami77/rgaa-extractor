@@ -31,7 +31,7 @@ export interface RagSource {
 export interface RagResponse {
   answer: string;
   sources: RagSource[];
-  mode: "rag" | "degraded"; // "degraded" si ChromaDB est hors ligne
+  mode: "rag" | "rag-cold-start" | "degraded"; // "rag-cold-start" si ChromaDB vide, "degraded" si hors ligne
   collections_queried: ChromaCollectionName[];
 }
 
@@ -152,7 +152,7 @@ export async function askAccessibility(
   return {
     answer,
     sources: citeSources ? sources : [],
-    mode: chromaOk ? "rag" : "degraded",
+    mode: chromaOk ? (sources.length > 0 ? "rag" : "rag-cold-start") : "degraded",
     collections_queried: chromaOk ? collections : [],
   };
 }
@@ -168,6 +168,9 @@ export async function analyzeCode(
   let sources: RagSource[] = [];
   const collections: ChromaCollectionName[] = ["rgaa_referential", "rgaa_code", "rgaa_findings"];
 
+  // Limiter le HTML pour l'éviter de déborder la fenêtre de contexte du LLM
+  const htmlTruncated = html.length > 6000 ? html.slice(0, 6000) + "\n<!-- [tronqué à 6000 caractères] -->" : html;
+
   if (chromaOk) {
     const queryText = `analyse HTML accessibilité ${context ?? ""} ${html.slice(0, 500)}`;
     const queryEmbedding = await embed(queryText);
@@ -176,7 +179,7 @@ export async function analyzeCode(
 
   const systemPrompt = await buildHubSystemPrompt();
   const userMessage = buildRagPrompt(
-    `Analyse ce code HTML et identifie toutes les non-conformités RGAA 4.1 :\n\`\`\`html\n${html}\n\`\`\`${context ? `\n\nContexte : ${context}` : ""}`,
+    `Analyse ce code HTML et identifie toutes les non-conformités RGAA 4.1 :\n\`\`\`html\n${htmlTruncated}\n\`\`\`${context ? `\n\nContexte : ${context}` : ""}`,
     sources,
   );
 
@@ -185,7 +188,7 @@ export async function analyzeCode(
   return {
     answer,
     sources,
-    mode: chromaOk ? "rag" : "degraded",
+    mode: chromaOk ? (sources.length > 0 ? "rag" : "rag-cold-start") : "degraded",
     collections_queried: chromaOk ? collections : [],
   };
 }
@@ -219,7 +222,7 @@ export async function suggestFix(
   return {
     answer,
     sources,
-    mode: chromaOk ? "rag" : "degraded",
+    mode: chromaOk ? (sources.length > 0 ? "rag" : "rag-cold-start") : "degraded",
     collections_queried: chromaOk ? collections : [],
   };
 }

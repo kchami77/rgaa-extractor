@@ -16,6 +16,7 @@ import { ragEngine } from "./ragEngine";
 import { isChromaAvailable } from "./chromaClient";
 import { generateFindingSignature } from "../utils/deduplication";
 import type { ChromaCollectionName } from "./chromaClient";
+import { upsertFindingTemplateFromFinding } from "../db";
 
 export interface IngestionResult {
   success: boolean;
@@ -203,7 +204,42 @@ async function indexValidatedFinding(params: {
   const text = [params.finding, params.solution ? `Solution : ${params.solution}` : ""]
     .filter(Boolean).join("\n");
 
-  const id = `validated-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  // S5-1 FIX : ID stable basé sur le hash du contenu pour éviter les doublons
+  // generateFindingSignature attend un criterionId numérique — on utilise 0 pour les validations MCP
+  const signatureHash = generateFindingSignature(params.finding, 0);
+  const id = `validated-${signatureHash}`;
+
+  // S5-2 FIX : Persister en MySQL AUSSI pour survivre à un reset ChromaDB
+  // findingTemplates sert de source de vérité pour le futur bootstrap
+  try {
+    const db = await getDb();
+    if (db) {
+      // On cherche le criterionId depuis la référence
+      const criteriaRows = await db
+        .select({ id: rgaaCriteria.id, thematicId: rgaaCriteria.thematicId })
+        .from(rgaaCriteria)
+        .where(eq(rgaaCriteria.reference, params.criterionReference))
+        .limit(1);
+
+      if (criteriaRows.length > 0) {
+        const criterion = criteriaRows[0];
+        const stableHash = generateFindingSignature(params.finding, criterion.id);
+        await upsertFindingTemplateFromFinding({
+          criterionId: criterion.id,
+          thematicId: criterion.thematicId,
+          impact: params.impact,
+          contentType: null,
+          finding: params.finding,
+          solution: params.solution ?? null,
+          signatureHash: stableHash,
+        });
+        console.log(`[Hub] Constat validé persisté en MySQL (critère ${params.criterionReference})`);
+      }
+    }
+  } catch (e) {
+    // Ne pas bloquer l'indexation ChromaDB si MySQL échoue
+    console.warn("[Hub] Persistance MySQL du constat validé échouée:", (e as Error).message);
+  }
 
   await ragEngine.indexDocument({
     id,

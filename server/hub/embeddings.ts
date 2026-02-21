@@ -28,25 +28,35 @@ class OllamaEmbeddingProvider implements EmbeddingProvider {
     const host = await settingsService.get("embed.ollamaHost");
     const model = await settingsService.get("embed.model");
 
-    const res = await fetch(`${host}/api/embeddings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, prompt: text }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
-    if (!res.ok) {
-      throw new Error(`[Embeddings/Ollama] HTTP ${res.status}: ${await res.text()}`);
+    try {
+      const res = await fetch(`${host}/api/embeddings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model, prompt: text }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        throw new Error(`[Embeddings/Ollama] HTTP ${res.status}: ${await res.text()}`);
+      }
+
+      const data = await res.json() as { embedding: number[] };
+      return data.embedding;
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    const data = await res.json() as { embedding: number[] };
-    return data.embedding;
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
-    // Ollama ne supporte pas le batch natif — on séquentialise
+    // Ollama ne supporte pas le batch natif — concurrence limitée à 5 pour éviter le goulot
+    const CONCURRENCY = 5;
     const results: number[][] = [];
-    for (const text of texts) {
-      results.push(await this.embed(text));
+    for (let i = 0; i < texts.length; i += CONCURRENCY) {
+      const chunk = texts.slice(i, i + CONCURRENCY);
+      results.push(...await Promise.all(chunk.map(t => this.embed(t))));
     }
     return results;
   }
@@ -66,21 +76,29 @@ class OpenAIEmbeddingProvider implements EmbeddingProvider {
     const apiKey = await settingsService.get("embed.apiKey");
     const model  = await settingsService.get("embed.model");
 
-    const res = await fetch("https://api.openai.com/v1/embeddings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ input: texts, model }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30_000);
 
-    if (!res.ok) {
-      throw new Error(`[Embeddings/OpenAI] HTTP ${res.status}: ${await res.text()}`);
+    try {
+      const res = await fetch("https://api.openai.com/v1/embeddings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ input: texts, model }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        throw new Error(`[Embeddings/OpenAI] HTTP ${res.status}: ${await res.text()}`);
+      }
+
+      const data = await res.json() as { data: { embedding: number[] }[] };
+      return data.data.map(d => d.embedding);
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    const data = await res.json() as { data: { embedding: number[] }[] };
-    return data.data.map(d => d.embedding);
   }
 }
 

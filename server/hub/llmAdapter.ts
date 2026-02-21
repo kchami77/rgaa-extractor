@@ -93,15 +93,24 @@ export async function invokeHubLLM(params: InvokeHubParams): Promise<string> {
     temperature,
   };
 
-  const response = await fetch(endpointUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-      ...extraHeaders(provider),
-    },
-    body: JSON.stringify(payload),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60_000); // 60s max pour un LLM
+
+  let response: Response;
+  try {
+    response = await fetch(endpointUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+        ...extraHeaders(provider),
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -115,6 +124,15 @@ export async function invokeHubLLM(params: InvokeHubParams): Promise<string> {
   };
 
   const rawContent = result.choices?.[0]?.message?.content ?? "";
+
+  // S3-1 FIX : réponse vide = erreur explicite (content:null = context trop long ou tool_call)
+  if (!rawContent) {
+    throw new Error(
+      `[Hub/LLM] Réponse vide du modèle ${model} (provider: ${provider}). ` +
+      `Vérifiez la clé API, les limites de tokens, ou réduisez la taille du prompt.`
+    );
+  }
+
   return typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
 }
 

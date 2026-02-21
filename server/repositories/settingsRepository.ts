@@ -74,10 +74,11 @@ export async function getSetting(key: string): Promise<HubSetting | undefined> {
 export async function setSetting(key: string, value: string): Promise<void> {
   const db = await getDb();
   if (!db) return;
+  // S6-1 FIX : UPDATE silencieux si la clé n'existe pas → upsert idempotent
   await db
-    .update(hubSettings)
-    .set({ value })
-    .where(eq(hubSettings.key, key));
+    .insert(hubSettings)
+    .values({ key, value, type: "string", category: "custom", description: null })
+    .onDuplicateKeyUpdate({ set: { value } });
 }
 
 /**
