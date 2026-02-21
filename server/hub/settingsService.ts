@@ -4,7 +4,7 @@
  * Principe :
  *   - Premier appel → charge TOUS les settings depuis MySQL (warmupCache)
  *   - Appels suivants → lecture depuis le Map en mémoire (< 1µs)
- *   - setSetting() → écrit en BDD ET invalide le cache local
+ *   - setSetting() → écrit en BDD ET met à jour le cache local
  *   - Si MySQL est KO au démarrage → fallback silencieux sur les valeurs ENV/défaut
  *
  * Règle : ce service ne doit JAMAIS faire crasher le serveur.
@@ -17,9 +17,10 @@ import {
   setSetting as dbSetSetting,
   seedDefaultSettings,
 } from "../repositories/settingsRepository";
+import type { HubSetting } from "../../drizzle/schema";
 
 // ─── Cache mémoire ────────────────────────────────────────────────────────────
-const cache = new Map<string, string>();
+const cache = new Map<string, HubSetting>();
 let initialized = false;
 let initializing = false;
 
@@ -53,15 +54,13 @@ async function _doWarmup(): Promise<void> {
     await seedDefaultSettings();
     const rows = await getAllSettings();
     for (const row of rows) {
-      cache.set(row.key, row.value);
+      cache.set(row.key, row);
     }
     initialized = true;
     console.log(`[SettingsService] Cache chargé — ${cache.size} paramètres`);
   } catch (err) {
     console.warn("[SettingsService] MySQL indisponible au démarrage — fallback ENV activé");
-    for (const [k, v] of Object.entries(ENV_FALLBACKS)) {
-      if (!cache.has(k)) cache.set(k, v);
-    }
+    // On marque quand même comme initialisé pour autoriser le service à répondre via ENV
     initialized = true;
   } finally {
     initializing = false;
@@ -80,10 +79,10 @@ async function warmupCache(): Promise<void> {
 
 // ─── API publique ─────────────────────────────────────────────────────────────
 
-/** Récupère un paramètre. Jamais null grâce aux fallbacks. */
+/** Récupère la valeur d'un paramètre. */
 export async function getSetting(key: string): Promise<string> {
   if (!initialized) await warmupCache();
-  return cache.get(key) ?? ENV_FALLBACKS[key] ?? "";
+  return cache.get(key)?.value ?? ENV_FALLBACKS[key] ?? "";
 }
 
 /** Récupère un booléen. */
@@ -98,30 +97,47 @@ export async function getSettingNumber(key: string): Promise<number> {
   return parseFloat(v) || 0;
 }
 
-/** Met à jour un paramètre en BDD ET invalide le cache local. */
+/** Met à jour un paramètre en BDD ET rafraîchit le cache local. */
 export async function setSetting(key: string, value: string): Promise<void> {
   if (!initialized) await warmupCache();
-  // Si la BDD est indisponible (mode fallback), lever une erreur explicite
-  if (!initialized) throw new Error("[SettingsService] Impossible de sauvegarder : MySQL indisponible");
-  await dbSetSetting(key, value);
-  cache.set(key, value);
+  
+  // Tentative en BDD
+  await dbSetSetting(key, value).catch(err => {
+     console.error(`[SettingsService] Échec persistence BDD pour ${key}:`, err.message);
+     // On continue pour mettre à jour le cache même si la BDD a échoué (mode dégradé)
+  });
+
+  const existing = cache.get(key);
+  if (existing) {
+    cache.set(key, { ...existing, value, updatedAt: new Date() });
+  } else {
+    // Si la clé n'existe pas encore dans le cache (setting custom)
+    cache.set(key, { 
+      key, 
+      value, 
+      type: "string", 
+      category: "custom", 
+      description: null, 
+      updatedAt: new Date() 
+    });
+  }
 }
 
-/** Retourne tous les paramètres du cache (pour l'UI Options). */
-export async function getAllCachedSettings(): Promise<Record<string, string>> {
+/** Retourne tous les paramètres complets (pour l'UI Options). */
+export async function getAllCachedSettings(): Promise<HubSetting[]> {
   if (!initialized) await warmupCache();
-  return Object.fromEntries(cache);
+  return Array.from(cache.values());
 }
 
-/** Force le rechargement du cache depuis MySQL (après import en masse). */
+/** Force le rechargement du cache depuis MySQL. */
 export async function reloadCache(): Promise<void> {
   initialized = false;
-  _warmupPromise = null; // réinitialiser le singleton
+  _warmupPromise = null;
   cache.clear();
   await warmupCache();
 }
 
-/** Expose le settingsService comme objet pour faciliter les imports */
+/** Expose le settingsService comme objet */
 export const settingsService = {
   get: getSetting,
   getBool: getSettingBool,

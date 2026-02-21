@@ -2,10 +2,11 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileText, BarChart3, BookOpen, Layers, History, Brain } from "lucide-react";
+import { Upload, FileText, BarChart3, BookOpen, Layers, History, Brain, Settings } from "lucide-react";
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
+import { Link } from "wouter";
 import { toast } from "sonner";
 import UploadSection from "@/components/UploadSection";
 import FindingsLibrary from "@/components/FindingsLibrary";
@@ -67,7 +68,12 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.name || user?.email}</span>
+            <span className="text-sm text-gray-600 font-medium">{user?.name || user?.email}</span>
+            <Button variant="ghost" size="icon" asChild title="Paramètres du Hub">
+              <Link href="/settings">
+                <Settings className="h-5 w-5 text-gray-500 hover:text-indigo-600 transition-colors" />
+              </Link>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => logout()}>
               Déconnexion
             </Button>
