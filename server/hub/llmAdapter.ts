@@ -72,6 +72,7 @@ export async function invokeHubLLM(params: InvokeHubParams): Promise<string> {
   const apiKey      = await settingsService.get("llm.apiKey");
   const maxTokens   = await settingsService.getNumber("llm.maxTokens") || 4096;
   const temperature = await settingsService.getNumber("llm.temperature") || 0.3;
+  const reasoning   = await settingsService.getBool("llm.reasoning");
   const endpointUrl = await resolveEndpointUrl(provider);
 
   // Construire les messages avec system prompt si fourni
@@ -86,12 +87,17 @@ export async function invokeHubLLM(params: InvokeHubParams): Promise<string> {
     });
   }
 
-  const payload = {
+  const payload: any = {
     model,
     messages,
     max_tokens: maxTokens,
     temperature,
   };
+
+  // S12-1 FIX : Ajout du support OpenRouter Reasoning
+  if (provider === "openrouter" && reasoning) {
+    payload.reasoning = { enabled: true };
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60_000); // 60s max pour un LLM

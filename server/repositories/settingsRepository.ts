@@ -13,6 +13,7 @@ export const DEFAULT_SETTINGS: Omit<InsertHubSetting, "updatedAt">[] = [
   { key: "llm.baseUrl",     value: "",           type: "string",   category: "llm",    description: "URL de base de l'API (auto si vide)" },
   { key: "llm.maxTokens",   value: "4096",       type: "number",   category: "llm",    description: "Nombre maximum de tokens en sortie" },
   { key: "llm.temperature", value: "0.3",        type: "number",   category: "llm",    description: "Température (créativité) entre 0 et 1" },
+  { key: "llm.reasoning",   value: "false",      type: "boolean",  category: "llm",    description: "Activer le mode reasoning (pensée) pour les modèles OpenRouter compatibles (ex: DeepSeek R1, GPT-o1)." },
   { key: "llm.detailLevel", value: "standard",   type: "select",   category: "llm",    description: "Niveau de détail des réponses (concise | standard | expert)" },
   // Embeddings
   { key: "embed.provider",  value: "ollama",     type: "select",   category: "embed",  description: "Fournisseur d'embeddings (openai | ollama)" },

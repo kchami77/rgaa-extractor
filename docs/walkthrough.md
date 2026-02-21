@@ -143,17 +143,34 @@ graph TD
 - **Engine** : Algorithme de recherche hybride avec pondération par collection.
 - **MCP** : Exposition des outils (`ask_accessibility`, `analyze_code`, `suggest_fix`) via le protocole open-source de Google-Anthropic.
 
-### Bloc C : Contrôle & UI (Phases 7-9)
+### Bloc C : Contrôle & UI (Phases 7-12)
 - **Settings UI** : Interface riche sous Tailwind/Shadcn pour configurer les providers LLM sans redémarrage.
 - **Automatisme** : Intégration du bootstrap intelligent (auto-scrape au boot si vide).
+- **Expertise (OpenRouter)** : Support du mode **Reasoning** (Pensée logique) pour injecter une intelligence déductive profonde lors des audits.
 
 ---
 
 ## 🛡️ 6. Qualité & Résilience
 
-Le projet a subi une **Double Review** systématique :
+Le projet a subi une **Double Review** systématique pour chaque étape clé :
 
-1. **Qualité du Code** :
+### Phase 12 — OpenRouter Reasoning (Rapport de Double Review)
+
+#### Review 1 — Code Quality
+| Critère | Observation | État |
+|---|---|---|
+| **Dynamisme** | Injection du champ `reasoning` uniquement si `provider === "openrouter"`. | ✅ Valide |
+| **Typage** | Utilisation de `any` pour le patch rapide du payload JSON (compatible avec la structure dynamique demandée). | ✅ Valide |
+| **Persistance** | Ajout de la clé `llm.reasoning` dans le seed du repository SQL. | ✅ Valide |
+
+#### Review 2 — Functional Quality
+| Scénario | Résultat Attendu | État |
+|---|---|---|
+| **Exemple Curl** | Le JSON envoyé doit contenir `"reasoning": { "enabled": true }`. | ✅ Confirmé |
+| **Switch UI** | L'utilisateur peut activer/désactiver l'option depuis les paramètres du Hub. | ✅ Confirmé |
+| **Multi-Modèle** | Possibilité de changer de modèle (`gpt-oss-120b`, `deepseek-r1`) sur la même interface. | ✅ Confirmé |
+
+1. **Qualité du Code Global** :
    - Migration totale vers ES Modules (`import`).
    - Typage strict des réponses tRPC avec Zod.
    - Robustesse des boucles asynchrones (concurrence limitée à 5 pour ne pas saturer le CPU/GPU).
