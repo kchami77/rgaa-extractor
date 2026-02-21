@@ -30,10 +30,15 @@ Le **RGAA Knowledge Hub** transforme l'application d'un simple extracteur de don
 1. [🏗️ Vision du Projet](#️-1-vision-du-projet)
 2. [🚀 Guide d'Installation Locale](#-3-guide-dinstallation-locale)
 3. [🧩 Structure du Code](#-4-structure-du-code)
+   - [📄 Fiche 01 : Infrastructure tRPC](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/01_core_infrastructure.md)
+   - [📄 Fiche 02 : Moteur RAG & ChromaDB](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/02_rag_engine.md)
+   - [📄 Fiche 03 : Interopérabilité MCP](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/03_mcp_integration.md)
+   - [📄 Fiche 04 : Framework de Scraping](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/04_scraper_framework.md)
+   - [📄 Fiche 05 : Interface & Réglages](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/05_admin_hub_ui.md)
 4. [🛠️ Développement par Blocs](#️-5-développement-par-blocs)
-6. [🛡️ Qualité & Résilience](#-6-qualité--résilience)
-7. [🛠️ Commandes Utiles & Maintenance](#️-7-commandes-utiles--maintenance)
-8. [🔮 Évolutions Futures](#-8-évolutions-futures)
+5. [🛡️ Qualité & Résilience](#-6-qualité--résilience)
+6. [🛠️ Commandes Utiles & Maintenance](#️-7-commandes-utiles--maintenance)
+7. [🔮 Évolutions Futures](#-8-évolutions-futures)
 
 ---
 
