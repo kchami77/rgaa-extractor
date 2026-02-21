@@ -20,9 +20,8 @@ import { systemRouter } from "../_core/systemRouter";
 import { auditRouter } from "./audit";
 import { criteriaRouter } from "./criteria";
 import { findingTemplatesRouter } from "./findingTemplates";
-// Ces deux routers seront activés en Phase 3 & 7
-// import { hubRouter } from "./hub";
-// import { settingsRouter } from "./settings";
+import { hubRouter } from "./hub";
+import { settingsRouter } from "./settings";
 
 export const appRouter = router({
   system: systemRouter,
@@ -39,8 +38,8 @@ export const appRouter = router({
   audit: auditRouter,
   criteria: criteriaRouter,
   findingTemplates: findingTemplatesRouter,
-  // hub: hubRouter,       // Phase 3 — RAG Engine tools
-  // settings: settingsRouter, // Phase 7 — Options UI
+  hub: hubRouter,
+  settings: settingsRouter,
 });
 
 export type AppRouter = typeof appRouter;

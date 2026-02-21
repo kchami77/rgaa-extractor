@@ -1,7 +1,4 @@
-/**
- * Interfaces communes pour tous les adaptateurs de scraping.
- * Chaque adaptateur retourne ScrapedDocument[] indépendamment.
- */
+import { z } from "zod";
 import { createHash } from "crypto";
 import type { ChromaCollectionName } from "../chromaClient";
 
@@ -58,6 +55,7 @@ export interface ScrapeResult {
 
 export const SCRAPER_SOURCES = ["rgaa", "wcag", "wai-aria", "accede", "mdn", "all"] as const;
 export type ScraperSource = (typeof SCRAPER_SOURCES)[number];
+export const ScraperSourceSchema = z.enum(SCRAPER_SOURCES);
 
 // ─── Statut temps-réel (polling UI Options) ─────────────────────────────────
 
