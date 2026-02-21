@@ -193,6 +193,13 @@ async function indexValidatedFinding(params: {
   impact: "Bloquant" | "Majeur" | "Mineur";
   source?: string;
 }): Promise<void> {
+  // Guard cohérent avec indexReportFindings et bootstrapFromExistingFindings
+  const available = await isChromaAvailable();
+  if (!available) {
+    console.warn("[Hub] indexValidatedFinding : ChromaDB indisponible — constat non indexé");
+    return;
+  }
+
   const text = [params.finding, params.solution ? `Solution : ${params.solution}` : ""]
     .filter(Boolean).join("\n");
 

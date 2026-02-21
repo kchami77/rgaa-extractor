@@ -1,15 +1,16 @@
 /**
- * LLM Adapter — Wrapper dynamique autour de invokeLLM
+ * LLM Adapter — Appel LLM configurable dynamiquement pour le Hub
  *
  * Contrairement à invokeLLM (hardcodé sur Forge/Gemini),
- * ce wrapper lit le provider et le modèle depuis settingsService
- * pour supporter OpenRouter, OpenAI, Ollama et Forge dynamiquement.
+ * ce module fait un fetch direct vers l'endpoint configuré dans settingsService.
+ * Cela permet au Hub d'utiliser OpenRouter, OpenAI, Ollama ou Forge
+ * selon la configuration de l'utilisateur.
  *
- * Zéro breaking change : invokeLLM reste intact, ce wrapper le surcharge.
+ * NOTE : invokeLLM (llm.ts) reste intact — il est utilisé par les autres
+ * features (parser, AI, etc.) avec Forge. Ce wrapper est exclusif au Hub.
  */
 
-import { invokeLLM } from "../_core/llm";
-import type { Message, InvokeParams } from "../_core/llm";
+import type { Message } from "../_core/llm";
 import { settingsService } from "./settingsService";
 
 export type { Message };
@@ -20,17 +21,23 @@ export interface HubLLMResponse {
   provider: string;
 }
 
-// ─── Résolution de l'URL de base selon le provider ───────────────────────────
-async function resolveBaseUrl(provider: string): Promise<string> {
+// ─── Résolution de l'URL complète selon le provider ──────────────────────────
+async function resolveEndpointUrl(provider: string): Promise<string> {
   const customUrl = await settingsService.get("llm.baseUrl");
-  if (customUrl) return customUrl;
+  if (customUrl) return customUrl.replace(/\/$/, "") + "/chat/completions";
 
   switch (provider) {
-    case "openrouter": return "https://openrouter.ai/api/v1";
-    case "openai":     return "https://api.openai.com/v1";
-    case "ollama":     return `${await settingsService.get("embed.ollamaHost")}/v1`;
+    case "openrouter": return "https://openrouter.ai/api/v1/chat/completions";
+    case "openai":     return "https://api.openai.com/v1/chat/completions";
+    case "ollama":     {
+      const ollamaHost = await settingsService.get("embed.ollamaHost");
+      return `${ollamaHost.replace(/\/$/, "")}/v1/chat/completions`;
+    }
     case "forge":
-    default:           return ""; // invokeLLM utilisera sa valeur par défaut
+    default: {
+      const forgeUrl = process.env.FORGE_API_URL ?? "https://forge.manus.im";
+      return `${forgeUrl.replace(/\/$/, "")}/v1/chat/completions`;
+    }
   }
 }
 
@@ -57,26 +64,57 @@ export interface InvokeHubParams {
 /**
  * Point d'entrée unique pour tous les appels LLM du Hub.
  * Lit dynamiquement : provider, model, apiKey, temperature, maxTokens.
+ * Fait un fetch direct (n'utilise pas invokeLLM) pour respecter la config.
  */
 export async function invokeHubLLM(params: InvokeHubParams): Promise<string> {
   const provider    = await settingsService.get("llm.provider");
   const model       = params.overrideModel ?? await settingsService.get("llm.model");
   const apiKey      = await settingsService.get("llm.apiKey");
-  const maxTokens   = await settingsService.getNumber("llm.maxTokens");
-  const temperature = await settingsService.getNumber("llm.temperature");
-  const baseUrl     = await resolveBaseUrl(provider);
+  const maxTokens   = await settingsService.getNumber("llm.maxTokens") || 4096;
+  const temperature = await settingsService.getNumber("llm.temperature") || 0.3;
+  const endpointUrl = await resolveEndpointUrl(provider);
 
   // Construire les messages avec system prompt si fourni
-  const messages: Message[] = params.systemPrompt
-    ? [{ role: "system", content: params.systemPrompt }, ...params.messages]
-    : params.messages;
+  const messages: Array<{ role: string; content: string }> = [];
+  if (params.systemPrompt) {
+    messages.push({ role: "system", content: params.systemPrompt });
+  }
+  for (const m of params.messages) {
+    messages.push({
+      role: m.role,
+      content: typeof m.content === "string" ? m.content : JSON.stringify(m.content),
+    });
+  }
 
-  const result = await invokeLLM({
+  const payload = {
+    model,
     messages,
-  } as InvokeParams);
+    max_tokens: maxTokens,
+    temperature,
+  };
 
-  const firstChoice = result.choices[0];
-  const rawContent = firstChoice?.message?.content ?? "";
+  const response = await fetch(endpointUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      ...extraHeaders(provider),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`[Hub/LLM] ${provider}/${model} HTTP ${response.status}: ${errorText}`);
+  }
+
+  const result = await response.json() as {
+    choices: Array<{
+      message: { content: string | null };
+    }>;
+  };
+
+  const rawContent = result.choices?.[0]?.message?.content ?? "";
   return typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
 }
 

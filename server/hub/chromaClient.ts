@@ -1,8 +1,11 @@
 /**
- * ChromaDB Client — Base vectorielle embarquée (PersistentClient)
+ * ChromaDB Client — Base vectorielle (mode serveur HTTP)
  *
- * Mode PersistentClient : aucun serveur Python requis.
- * Les données persistent dans ./data/chromadb (configurable via Options).
+ * chromadb@3.x (JavaScript) est un CLIENT HTTP uniquement.
+ * Il n'existe pas de mode embarqué en JS/TS (uniquement en Python).
+ *
+ * → ChromaDB doit fonctionner comme un service séparé :
+ *   chroma run --path ./data/chromadb --host 0.0.0.0 --port 8000
  *
  * Collections :
  *   - rgaa_referential : critères RGAA 4.1 + WCAG 2.2
@@ -11,7 +14,8 @@
  *   - rgaa_code        : snippets HTML/ARIA before/after
  */
 
-import { ChromaClient, Collection } from "chromadb";
+import { ChromaClient } from "chromadb";
+import type { Collection } from "chromadb";
 import { settingsService } from "./settingsService";
 
 export type ChromaCollectionName =
@@ -22,12 +26,23 @@ export type ChromaCollectionName =
 
 // ─── Singleton ────────────────────────────────────────────────────────────────
 let client: ChromaClient | null = null;
+let _lastChromaHost = "";
 const collectionCache = new Map<string, Collection>();
 
 async function getClient(): Promise<ChromaClient> {
-  if (!client) {
-    const path = await settingsService.get("chroma.path");
-    client = new ChromaClient({ path });
+  const host = await settingsService.get("chroma.host");
+  if (!client || _lastChromaHost !== host) {
+    if (_lastChromaHost && _lastChromaHost !== host) {
+      collectionCache.clear();
+      console.log(`[ChromaDB] Host modifié (${_lastChromaHost} → ${host}) — cache invalidé`);
+    }
+    // ChromaClient attend : { host: "localhost", port: 8000 } ou une URL complète
+    const url = host.startsWith("http") ? new URL(host) : new URL(`http://${host}`);
+    client = new ChromaClient({
+      host: url.hostname,
+      port: Number(url.port) || 8000,
+    });
+    _lastChromaHost = host;
   }
   return client;
 }

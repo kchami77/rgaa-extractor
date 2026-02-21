@@ -27,7 +27,7 @@ let initializing = false;
 const ENV_FALLBACKS: Record<string, string> = {
   "llm.apiKey":       ENV.forgeApiKey ?? "",
   "embed.ollamaHost": process.env.OLLAMA_HOST ?? "http://localhost:11434",
-  "chroma.path":      process.env.CHROMA_PATH  ?? "./data/chromadb",
+  "chroma.host":      process.env.CHROMA_HOST  ?? "http://localhost:8000",
   "llm.provider":     "openrouter",
   "llm.model":        "openai/gpt-oss-120b:free",
   "llm.maxTokens":    "4096",
@@ -39,20 +39,16 @@ const ENV_FALLBACKS: Record<string, string> = {
   "rag.minSimilarity":"0.65",
   "rag.weightFindings":"1.5",
   "rag.weightReferential":"1.0",
+  "rag.weightExpertise":"1.3",
   "rag.weightCode":   "0.8",
   "rag.citeSources":  "true",
 };
 
-// ─── Initialisation ───────────────────────────────────────────────────────────
+// ─── Initialisation (Promise singleton — thread-safe) ────────────────────────
+let _warmupPromise: Promise<void> | null = null;
 
-/**
- * Charge tous les settings en mémoire depuis MySQL.
- * Appelé une seule fois au démarrage (lazy, thread-safe par flag).
- */
-async function warmupCache(): Promise<void> {
-  if (initialized || initializing) return;
+async function _doWarmup(): Promise<void> {
   initializing = true;
-
   try {
     await seedDefaultSettings();
     const rows = await getAllSettings();
@@ -62,15 +58,24 @@ async function warmupCache(): Promise<void> {
     initialized = true;
     console.log(`[SettingsService] Cache chargé — ${cache.size} paramètres`);
   } catch (err) {
-    // MySQL indisponible → on continue avec les fallbacks ENV
     console.warn("[SettingsService] MySQL indisponible au démarrage — fallback ENV activé");
     for (const [k, v] of Object.entries(ENV_FALLBACKS)) {
       if (!cache.has(k)) cache.set(k, v);
     }
-    initialized = true; // éviter les retry infinis
+    initialized = true;
   } finally {
     initializing = false;
   }
+}
+
+/**
+ * Charge tous les settings en mémoire depuis MySQL.
+ * Utilise un singleton Promise pour éviter les lancements multiples simultanés.
+ */
+async function warmupCache(): Promise<void> {
+  if (initialized) return;
+  if (!_warmupPromise) _warmupPromise = _doWarmup();
+  return _warmupPromise;
 }
 
 // ─── API publique ─────────────────────────────────────────────────────────────
@@ -95,8 +100,11 @@ export async function getSettingNumber(key: string): Promise<number> {
 
 /** Met à jour un paramètre en BDD ET invalide le cache local. */
 export async function setSetting(key: string, value: string): Promise<void> {
+  if (!initialized) await warmupCache();
+  // Si la BDD est indisponible (mode fallback), lever une erreur explicite
+  if (!initialized) throw new Error("[SettingsService] Impossible de sauvegarder : MySQL indisponible");
   await dbSetSetting(key, value);
-  cache.set(key, value); // invalidation locale immédiate
+  cache.set(key, value);
 }
 
 /** Retourne tous les paramètres du cache (pour l'UI Options). */
@@ -108,6 +116,7 @@ export async function getAllCachedSettings(): Promise<Record<string, string>> {
 /** Force le rechargement du cache depuis MySQL (après import en masse). */
 export async function reloadCache(): Promise<void> {
   initialized = false;
+  _warmupPromise = null; // réinitialiser le singleton
   cache.clear();
   await warmupCache();
 }

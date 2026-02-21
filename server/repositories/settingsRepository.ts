@@ -20,13 +20,14 @@ export const DEFAULT_SETTINGS: Omit<InsertHubSetting, "updatedAt">[] = [
   { key: "embed.apiKey",    value: "",           type: "password", category: "embed",  description: "Clé OpenAI (si provider=openai)" },
   { key: "embed.ollamaHost",value: "http://localhost:11434", type: "string", category: "embed", description: "URL du serveur Ollama" },
   // ChromaDB
-  { key: "chroma.path",     value: "./data/chromadb", type: "string", category: "chroma", description: "Chemin local de persistance ChromaDB" },
+  { key: "chroma.host",     value: "http://localhost:8000", type: "string", category: "chroma", description: "URL du serveur ChromaDB (ex: http://localhost:8000)" },
   { key: "chroma.enabled",  value: "true",       type: "boolean",  category: "chroma", description: "Activer la base vectorielle ChromaDB" },
   // RAG
   { key: "rag.topK",             value: "5",    type: "number",  category: "rag", description: "Nb de documents récupérés par collection" },
   { key: "rag.minSimilarity",    value: "0.65", type: "number",  category: "rag", description: "Seuil de similarité minimum (0-1)" },
   { key: "rag.weightFindings",   value: "1.5",  type: "number",  category: "rag", description: "Pondération des constats auditeurs" },
   { key: "rag.weightReferential",value: "1.0",  type: "number",  category: "rag", description: "Pondération du référentiel officiel" },
+  { key: "rag.weightExpertise",  value: "1.3",  type: "number",  category: "rag", description: "Pondération des templates approuvés et notices AcceDe" },
   { key: "rag.weightCode",       value: "0.8",  type: "number",  category: "rag", description: "Pondération des snippets de code" },
   { key: "rag.citeSources",      value: "true", type: "boolean", category: "rag", description: "Inclure les sources dans la réponse" },
   // Sources

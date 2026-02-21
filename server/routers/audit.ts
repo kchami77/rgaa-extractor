@@ -228,7 +228,13 @@ export const auditRouter = router({
         if (report.userId !== ctx.user.id) {
           throw new TRPCError({ code: "FORBIDDEN", message: "You don't have permission to delete this report" });
         }
-        await storageDelete(report.fileKey);
+        // storageDelete dans son propre try/catch : un fichier déjà absent
+        // ne doit pas empêcher la suppression SQL du rapport.
+        try {
+          await storageDelete(report.fileKey);
+        } catch (storageErr) {
+          console.warn("[Audit] Fichier introuvable dans le storage (déjà supprimé ?):", (storageErr as Error).message);
+        }
         await deleteAuditReport(input.reportId);
         return { success: true };
       } catch (error) {

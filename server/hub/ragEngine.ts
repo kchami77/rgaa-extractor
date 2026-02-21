@@ -47,7 +47,7 @@ async function getWeights(): Promise<Record<ChromaCollectionName, number>> {
   return {
     rgaa_referential: await settingsService.getNumber("rag.weightReferential"),
     rgaa_findings:    await settingsService.getNumber("rag.weightFindings"),
-    rgaa_expertise:   await settingsService.getNumber("rag.weightReferential"),
+    rgaa_expertise:   await settingsService.getNumber("rag.weightExpertise"),  // FIX: clé dédiée
     rgaa_code:        await settingsService.getNumber("rag.weightCode"),
   };
 }
@@ -69,6 +69,7 @@ function computeScore(
 async function searchAllCollections(
   queryEmbedding: number[],
   collections: ChromaCollectionName[],
+  where?: Record<string, string>, // FIX: filtre ChromaDB optionnel transmis
 ): Promise<RagSource[]> {
   const topK = await settingsService.getNumber("rag.topK");
   const minSimilarity = await settingsService.getNumber("rag.minSimilarity");
@@ -79,7 +80,7 @@ async function searchAllCollections(
   await Promise.allSettled(
     collections.map(async (col) => {
       try {
-        const results = await queryCollection(col, queryEmbedding, topK);
+        const results = await queryCollection(col, queryEmbedding, topK, where); // FIX: where transmis
         for (const r of results) {
           const similarity = 1 - r.distance;
           if (similarity < minSimilarity) continue;
@@ -99,7 +100,6 @@ async function searchAllCollections(
     })
   );
 
-  // Trier par score décroissant, dédupliquer par id
   const seen = new Set<string>();
   return allResults
     .sort((a, b) => b.score - a.score)
@@ -205,13 +205,7 @@ export async function suggestFix(
     const queryText = criterionRef ? `${problem} critère ${criterionRef}` : problem;
     const queryEmbedding = await embed(queryText);
     const whereFilter = criterionRef ? { criterionReference: criterionRef } : undefined;
-    sources = await searchAllCollections(queryEmbedding, collections);
-    // Filtrer additionnellement sur le critère si fourni
-    if (criterionRef) {
-      sources = sources.filter(s =>
-        !s.metadata.criterionReference || s.metadata.criterionReference === criterionRef
-      );
-    }
+    sources = await searchAllCollections(queryEmbedding, collections, whereFilter); // FIX: where transmis
   }
 
   const systemPrompt = await buildHubSystemPrompt();
