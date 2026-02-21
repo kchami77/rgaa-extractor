@@ -1,41 +1,41 @@
-# Tech Sheet 03 — MCP (Model Context Protocol) Integration
+# Fiche Technique 03 — Intégration MCP (Model Context Protocol)
 
-## Objective
-Expose the Knowledge Hub specialized expertise to external AI agents (like Claude or ChatGPT) through a standard protocol, turning the application into a **Tool Provider**.
+## Objectif
+Exposer l'expertise spécialisée du Knowledge Hub à des agents IA externes (comme Claude ou ChatGPT) via un protocole standard, transformant l'application en un **Fournisseur d'Outils** (Tool Provider).
 
 ---
 
-## 🛠️ MCP Gateway : The Bridge
+## 🛠️ Passerelle MCP : Le Pont
 
-The MCP server acts as a translator between the application's internal RAG/DB logic and the universal tool-calling schema required by large language models.
+Le serveur MCP agit comme un traducteur entre la logique interne RAG/DB de l'application et le schéma universel d'appel d'outils requis par les grands modèles de langage (LLM).
 
 ```mermaid
 graph LR
-    AI[External LLM / Agent] -->|JSON-RPC| MCP[MCP Server]
-    MCP -->|Internal Call| RAG[RAG Engine]
-    MCP -->|Internal Call| DB[Audit Database]
-    RAG -->|Context| MCP
-    MCP -->|Formatted Response| AI
+    AI[Agent/LLM Externe] -->|JSON-RPC| MCP[Serveur MCP]
+    MCP -->|Appel Interne| RAG[Moteur RAG]
+    MCP -->|Appel Interne| DB[Base de données Audit]
+    RAG -->|Contexte| MCP
+    MCP -->|Réponse Formatée| AI
 ```
 
 ---
 
-## 🧰 Exposed Tools
+## 🧰 Outils Exposés
 
-The following tools are implemented in `server/mcp.ts` :
+Les outils suivants sont implémentés dans `server/mcp.ts` :
 
-| Tool Name | Parameters | Internal Logic |
+| Nom de l'outil | Paramètres | Logique Interne |
 |---|---|---|
-| `ask_accessibility` | `question` | Runs `ragEngine.queryHub` + `invokeHubLLM`. |
-| `analyze_code` | `htmlSnippet` | Extracts context for the snippet and asks for accessibility defects. |
-| `suggest_fix` | `findingId`, `code` | Cross-references a finding with WAI-ARIA patterns to suggest a patch. |
-| `validate_finding` | `draftText` | Validates if a drafted audit finding respects RGAA 4.1 terminology. |
+| `ask_accessibility` | `question` | Exécute `ragEngine.queryHub` + `invokeHubLLM`. |
+| `analyze_code` | `htmlSnippet` | Extrait le contexte pour le snippet et demande les défauts d'accessibilité. |
+| `suggest_fix` | `findingId`, `code` | Croise un constat avec les patterns WAI-ARIA pour suggérer un patch. |
+| `validate_finding` | `draftText` | Valide si un projet de constat respecte la terminologie RGAA 4.1. |
 
 ---
 
-## 🧪 Implementation Detail (`mcp.ts`)
+## 🧪 Détail de l'Implémentation (`mcp.ts`)
 
-The implementation uses the **MCP SDK** to define resources and tools.
+L'implémentation utilise le **SDK MCP** pour définir les ressources et les outils de manière standardisée.
 
 ```ts
 const server = new Server({
@@ -45,7 +45,7 @@ const server = new Server({
   capabilities: { tools: {} }
 });
 
-// Tool registration example
+// Exemple d'enregistrement d'outil
 server.tool(
   "ask_accessibility",
   { question: z.string() },
@@ -62,7 +62,7 @@ server.tool(
 
 ---
 
-## 🔐 Security & Constraints
-- **Isolation** : The MCP server runs as a separate entry point (`pnpm mcp`), meaning it can be deployed independently of the main web UI.
-- **Read-Only (Mostly)** : Tools are primarily designed for "Read" or "Analyze" operations. Sensitive actions like `trigger_reindex` require a specific flag or administrative token.
-- **Rate Limiting** : Built-in throttling to prevent an external agent from saturating the LLM providers (especially with expensive "Reasoning" models).
+## 🔐 Sécurité & Contraintes
+- **Isolation** : Le serveur MCP fonctionne comme un point d'entrée séparé (`pnpm mcp`), ce qui signifie qu'il peut être déployé indépendamment de l'interface web principale.
+- **Lecture Seule (Majorité)** : Les outils sont principalement conçus pour des opérations de "Lecture" ou d'"Analyse". Les actions sensibles comme `trigger_reindex` nécessitent un jeton administratif spécifique.
+- **Limitation de Débit** : Limitation intégrée pour empêcher un agent externe de saturer les fournisseurs de LLM (particulièrement avec les modèles de "Reasoning" coûteux).

@@ -1,44 +1,44 @@
-# Tech Sheet 04 — Scraper Framework & Adapters
+# Fiche Technique 04 — Framework de Scraping & Adaptateurs
 
-## Objective
-Maintain a relevant and up-to-date knowledge base by periodically ingesting official accessibility sources.
+## Objectif
+Maintenir une base de connaissances pertinente et à jour en ingérant périodiquement les sources officielles d'accessibilité.
 
 ---
 
-## 🏗️ Design : Module-per-Source
+## 🏗️ Conception : Un Module par Source
 
-The framework is built to be modular and resilient. Each source has its own isolated "Adapter" that handles its specific complexities (HTML parsing, JS rendering, rate limiting).
+Le framework est conçu pour être modulaire et résilient. Chaque source possède son propre "Adaptateur"對 (Adapter) isolé qui gère ses complexités spécifiques (parsing HTML, rendu JS, limitation de débit).
 
 ```mermaid
 graph TD
-    Orc[Orchestrator: knowledgeScraper.ts] --> RGAA[RGAA Adapter]
-    Orc --> WCAG[WCAG Adapter]
-    Orc --> ARIA[WAI-ARIA Adapter]
-    Orc --> Accede[AcceDe Web Adapter]
-    Orc --> MDN[MDN Adapter]
+    Orc[Orchestrateur: knowledgeScraper.ts] --> RGAA[Adaptateur RGAA]
+    Orc --> WCAG[Adaptateur WCAG]
+    Orc --> ARIA[Adaptateur WAI-ARIA]
+    Orc --> Accede[Adaptateur AcceDe Web]
+    Orc --> MDN[Adaptateur MDN]
     
     RGAA -->|Docs| Orc
     WCAG -->|Docs| Orc
-    Orc -->|Index| RAG[RAG Engine]
+    Orc -->|Indexation| RAG[Moteur RAG]
 ```
 
 ---
 
-## 🛠️ Data Handling Strategies
+## 🛠️ Stratégies de Manipulation des Données
 
-| Source | Tech Stack | Strategy |
+| Source | Stack Technologique | Stratégie de Collecte |
 |---|---|---|
-| **RGAA** | `fetch` + Regex | Parses the official Markdown and HTML. Uses a **local JSON fallback** if the site is offline. |
-| **WCAG** | `fetch` + `marked` | Deep crawls techniques from W3C. |
-| **WAI-ARIA**| `playwright` | Special handling for React-based patterns that require JS rendering. |
-| **AcceDe Web**| `fetch` + `marked` | Extracts structured notices for dev/design. |
-| **MDN** | `fetch` + API | Targets high-authority articles on ARIA roles and semantic HTML. |
+| **RGAA** | `fetch` + Regex | Analyse le Markdown et le HTML officiels. Utilise un **fallback JSON local** si le site est hors ligne. |
+| **WCAG** | `fetch` + `marked` | Analyse en profondeur les techniques du W3C. |
+| **WAI-ARIA**| `playwright` | Gestion spéciale pour les patterns basés sur React qui nécessitent un rendu JavaScript. |
+| **AcceDe Web**| `fetch` + `marked` | Extrait des notices structurées pour le développement et le design. |
+| **MDN** | `fetch` + API | Cible les articles à haute autorité sur les rôles ARIA et le HTML sémantique. |
 
 ---
 
-## 🔄 Idempotency & Hashing
+## 🔄 Idempotence & Hachage
 
-To avoid duplicate entries in the vector store, every scraped document is hashed using SHA-256 before indexing.
+Pour éviter les entrées en double dans la base vectorielle, chaque document scrappé est haché à l'aide de SHA-256 avant l'indexation.
 
 ```ts
 // server/hub/scrapers/utils.ts
@@ -48,11 +48,11 @@ export function generateDocId(source: string, content: string): string {
     .digest('hex');
 }
 ```
-*If the content hasn't changed since the last scrape, ChromaDB simply updates the existing record instead of creating a new one.*
+*Si le contenu n'a pas changé depuis le dernier scraping, ChromaDB met simplement à jour l'enregistrement existant au lieu d'en créer un nouveau.*
 
 ---
 
-## 🛡️ Resilience & Fallbacks
-- **Offline Reliability** : The RGAA referential (base of everything) is stored at `server/hub/data/rgaa-4.1.2.json` to ensure the app works even without an internet connection.
-- **Retry Logic** : Each adapter has a 3-attempt retry policy with exponential backoff.
-- **Resource Protection** : Concurrency is limited to 5 simultaneous requests to avoid being blocked by source servers or overloading the LLM embedding API.
+## 🛡️ Résilience & Replis (Fallbacks)
+- **Fiabilité Hors-Ligne** : Le référentiel RGAA (base de tout le système) est stocké dans `server/hub/data/rgaa-4.1.2.json` pour garantir que l'application fonctionne même sans connexion Internet.
+- **Logique de Réessai** : Chaque adaptateur dispose d'une politique de 3 tentatives de réessai avec un délai d'attente exponentiel.
+- **Protection des Ressources** : La concurrence est limitée à 5 requêtes simultanées pour éviter d'être bloqué par les serveurs sources ou de surcharger l'API d'embedding LLM.

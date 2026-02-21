@@ -1,53 +1,53 @@
-# Tech Sheet 05 — Admin Hub & Dynamic Settings
+# Fiche Technique 05 — Hub Admin & Réglages Dynamiques
 
-## Objective
-Provide a centralized interface to configure, monitor, and control the Knowledge Hub without needing to modify environment variables or restart the server.
+## Objectif
+Fournir une interface centralisée pour configurer, surveiller et contrôler le Knowledge Hub sans avoir besoin de modifier les variables d'environnement ou de redémarrer le serveur.
 
 ---
 
-## 🎨 UI Pattern : Category-based Dynamic Forms
+## 🎨 Pattern UI : Formulaires Dynamiques par Catégorie
 
-The `Options.tsx` page doesn't hardcode individual settings. Instead, it queries the backend for all settings grouped by category and generates the appropriate input type dynamically.
+La page `Options.tsx` ne code pas en dur les réglages individuels. Au lieu de cela, elle interroge le backend pour obtenir tous les réglages groupés par catégorie et génère dynamiquement le type d'entrée approprié.
 
 ```mermaid
 graph LR
-    API[Settings Service] -->|JSON List| UI[Options UI]
-    UI -->|Map| Form[Dynamic Grid]
-    Form -->|Field: boolean| Toggle[Switch]
-    Form -->|Field: password| Secret[Input Masked]
-    Form -->|Field: string| Text[Input]
-    Form -->|Field: number| Num[Stepper]
+    API[Service de Réglages] -->|Liste JSON| UI[UI Options]
+    UI -->|Mapping| Form[Grille Dynamique]
+    Form -->|Champ: boolean| Toggle[Interrupteur]
+    Form -->|Champ: password| Secret[Entrée Masquée]
+    Form -->|Champ: string| Text[Entrée Texte]
+    Form -->|Champ: number| Num[Compteur]
 ```
 
 ---
 
-## 💾 Storage & Caching : `settingsService.ts`
+## 💾 Stockage & Mise en Cache : `settingsService.ts`
 
-To avoid hitting the MySQL database for every LLM or RAG call, the settings service implements an **in-memory cache**.
+Pour éviter de solliciter la base de données MySQL à chaque appel LLM ou RAG, le service de réglages implémente un **cache en mémoire**.
 
-### Logic Flow
-1. **Request** : `settingsService.get("llm.model")`
-2. **Check Cache** : If present and not expired, return immediately.
-3. **Fetch Database** : If missing, query `hub_settings` table.
-4. **Update Cache** : Store the result for future calls.
-5. **Invalidate** : When a user updates a setting via the UI, the cache is cleared for that specific key.
-
----
-
-## 🚀 Monitoring : The Scraper Dashboard
-
-The Admin Hub includes a real-time monitoring interface for scraping operations :
-- **Progress Bar** : Calculated based on the number of sources completed vs total sources.
-- **Polling Loop** : The UI calls `getScraperStatus` every 3 seconds while an operation is in progress.
-- **Log Stream** : Displays the last 10 activities (e.g., "WCAG techniques indexed: +120").
+### Flux Logique
+1. **Requête** : `settingsService.get("llm.model")`
+2. **Vérification du Cache** : S'il est présent et non expiré, retour immédiat.
+3. **Récupération DB** : S'il est manquant, requête à la table `hub_settings`.
+4. **Mise à jour du Cache** : Stocke le résultat pour les futurs appels.
+5. **Invalidation** : Lorsqu'un utilisateur met à jour un réglage via l'UI, le cache est vidé pour cette clé spécifique.
 
 ---
 
-## ⚙️ Advanced Settings (Phase 12 Update)
-The Hub supports advanced AI behaviors like **OpenRouter Reasoning**. This is handled by a dedicated flag in the settings repository, which the LLM adapter reads to inject specific JSON parameters into the payload.
+## 🚀 Surveillance : Le Tableau de Bord du Scraper
+
+L'Admin Hub inclut une interface de surveillance en temps réel pour les opérations de scraping :
+- **Barre de Progression** : Calculée en fonction du nombre de sources terminées par rapport au nombre total de sources.
+- **Boucle de Polling** : L'interface appelle `getScraperStatus` toutes les 3 secondes lorsqu'une opération est en cours.
+- **Flux de Logs** : Affiche les 10 dernières activités (ex: "Techniques WCAG indexées : +120").
+
+---
+
+## ⚙️ Réglages Avancés (Mise à jour Phase 12)
+Le Hub prend en charge des comportements IA avancés comme le **Reasoning d'OpenRouter**. Ceci est géré par un drapeau dédié dans le référentiel de réglages, que l'adaptateur LLM lit pour injecter des paramètres JSON spécifiques dans la requête.
 
 ```ts
-// Example of dynamic parameter injection logic
+// Exemple de logique d'injection dynamique de paramètres
 if (setting("llm.reasoning") === "true" && provider === "openrouter") {
   payload.reasoning = { enabled: true };
 }
@@ -55,6 +55,6 @@ if (setting("llm.reasoning") === "true" && provider === "openrouter") {
 
 ---
 
-## ✅ Resilience
-- **DB Connection Fallback** : If the database is unreachable, the system automatically falls back to the `DEFAULT_SETTINGS` defined in the code.
-- **Validation** : Types are strictly validated via Zod on both client and server sides to prevent corrupted configurations.
+## ✅ Résilience
+- **Repli sur Connexion DB** : Si la base de données est injoignable, le système se replie automatiquement sur les `DEFAULT_SETTINGS` définis dans le code.
+- **Validation** : Les types sont strictement validés via Zod du côté client et du côté serveur pour empêcher des configurations corrompues.
