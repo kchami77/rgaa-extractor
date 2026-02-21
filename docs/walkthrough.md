@@ -35,41 +35,75 @@ Le **RGAA Knowledge Hub** transforme l'application d'un simple extracteur de don
 
 ---
 
-## 🚀 3. Guide d'Installation Locale
+## 🚀 3. Guide d'Installation Locale (Windows & XAMPP)
 
-### Pré-requis
-- **Node.js 20+** et **pnpm**
-- **Docker** (recommandé pour ChromaDB)
-- **MySQL** instance
+### 📋 Pré-requis
+1. **Node.js 20+** : Téléchargez la version LTS sur [nodejs.org](https://nodejs.org/).
+2. **pnpm** : Une fois Node installé, lancez `npm install -g pnpm` dans votre terminal.
+3. **XAMPP** : Pour le serveur MySQL local. Téléchargez-le sur [apachefriends.org](https://www.apachefriends.org/).
 
-### Étape 1 : Installation
+---
+
+### 📥 Étape 1 : Installation des dépendances
+Ouvrez un terminal (PowerShell ou CMD) à la racine du projet :
 ```bash
+# Installation des librairies Node
 pnpm install
+
+# Installation du moteur de recherche WAI-ARIA (Scraping JS support)
 pnpm exec playwright install chromium
 ```
 
-### Étape 2 : Configuration
-Copiez `.env.example` vers `.env` et renseignez les variables :
-- `DATABASE_URL` : Connexion MySQL
-- `CHROMA_HOST` : `http://localhost:8000`
-- `OLLAMA_HOST` (ou OpenAI Key) : Pour les embeddings et le LLM.
+---
 
-### Étape 3 : Base de données
-```bash
-pnpm db:push
+### 🛠️ Étape 2 : Configuration MySQL (via XAMPP)
+1. Ouvrez le **Panneau de contrôle XAMPP** et cliquez sur **Start** à côté de **MySQL**.
+2. Allez sur [http://localhost/phpmyadmin/](http://localhost/phpmyadmin/).
+3. Créez une nouvelle base de données nommée `rgaa_extractor`.
+4. Créez un fichier `.env` à la racine (en copiant `.env.example`) et configurez la connexion :
+```env
+# Format : mysql://utilisateur:motdepasse@host:port/nom_base
+DATABASE_URL="mysql://root:@localhost:3306/rgaa_extractor"
+```
+> [!NOTE]
+> Par défaut, XAMPP utilise l'utilisateur `root` sans mot de passe.
+
+---
+
+### 🧠 Étape 3 : Configuration de l'Intelligence Artificielle
+Le Hub a besoin d'un moteur pour comprendre le texte. Deux options s'offrent à vous :
+- **Local (Ollama)** : Téléchargez Ollama, lancez-le et faites `ollama pull llama3`.
+- **Cloud (OpenAI)** : Renseignez votre clé API OpenAI dans le `.env`.
+
+Exemple de config `.env` pour Ollama :
+```env
+EMBEDDINGS_PROVIDER="ollama"
+OLLAMA_HOST="http://localhost:11434"
+LLM_PROVIDER="ollama"
+LLM_MODEL="llama3"
 ```
 
-### Étape 4 : Lancement des dépendances (ChromaDB)
-Si vous utilisez Docker :
-```bash
-docker run -d -p 8000:8000 chromadb/chroma
-```
+---
 
-### Étape 5 : Démarrage
-```bash
-pnpm dev
-```
-*Le serveur détectera automatiquement si les collections sont vides et lancera l'indexation initiale en tâche de fond.*
+### 🔎 Étape 4 : Lancement de ChromaDB (Recherche Vectorielle)
+Si vous ne souhaitez pas utiliser Docker, vous pouvez lancer Chroma via Python :
+1. Installez Python sur votre système.
+2. Dans un terminal séparé : `pip install chromadb`.
+3. Lancez le serveur : `chroma run --path ./data/chromadb --port 8000`.
+
+---
+
+### ⚡ Étape 5 : Initialisation et Démarrage
+1. **Synchronisez le schéma** de la base de données :
+   ```bash
+   pnpm db:push
+   ```
+2. **Lancez l'application** en mode développement :
+   ```bash
+   pnpm dev
+   ```
+
+*Note : Au premier lancement, le Hub détectera que la base vectorielle est vide. Il lancera automatiquement le scraping des référentiels (RGAA, WCAG...) en arrière-plan. Vous pourrez suivre la progression dans la console ou via la page des Paramètres (icône engrenage).*
 
 ---
 
