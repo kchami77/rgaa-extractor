@@ -31,9 +31,9 @@ Le **RGAA Knowledge Hub** transforme l'application d'un simple extracteur de don
 2. [🚀 Guide d'Installation Locale](#-3-guide-dinstallation-locale)
 3. [🧩 Structure du Code](#-4-structure-du-code)
 4. [🛠️ Développement par Blocs](#️-5-développement-par-blocs)
-5. [🛡️ Qualité & Résilience](#️-6-qualité--résilience)
-6. [🛠️ Commandes Utiles & Maintenance](#️-6-commandes-utiles--maintenance)
-7. [🔮 Évolutions Futures](#-7-évolutions-futures)
+6. [🛡️ Qualité & Résilience](#-6-qualité--résilience)
+7. [🛠️ Commandes Utiles & Maintenance](#️-7-commandes-utiles--maintenance)
+8. [🔮 Évolutions Futures](#-8-évolutions-futures)
 
 ---
 
@@ -142,7 +142,7 @@ graph TD
 - **MCP** : Exposition des outils (`ask_accessibility`, `analyze_code`, `suggest_fix`) via le protocole open-source de Google-Anthropic.
 
 ### Bloc C : Contrôle & UI (Phases 7-9)
-- **Settins UI** : Interface riche sous Tailwind/Shadcn pour configurer les providers LLM sans redémarrage.
+- **Settings UI** : Interface riche sous Tailwind/Shadcn pour configurer les providers LLM sans redémarrage.
 - **Automatisme** : Intégration du bootstrap intelligent (auto-scrape au boot si vide).
 
 ---
@@ -166,7 +166,7 @@ Le projet a subi une **Double Review** systématique :
 
 ---
 
-## 🛠️ 6. Commandes Utiles & Maintenance
+## 🛠️ 7. Commandes Utiles & Maintenance
 
 | Action | Commande |
 |:--- |:--- |
@@ -178,7 +178,7 @@ Le projet a subi une **Double Review** systématique :
 
 ---
 
-## 🔮 7. Évolutions Futures
+## 🔮 8. Évolutions Futures
 
 Pour aller encore plus loin dans l'expertise accessibilité, les axes suivants sont envisagés :
 1. **Multi-Langualité Étendue** : Support complet des référentiels anglais (WCAG pur) et espagnols (pour les projets internationaux).
