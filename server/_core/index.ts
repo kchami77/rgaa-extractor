@@ -9,8 +9,9 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import Busboy from "busboy";
 import { initializeRgaaReferential } from "../db";
+import { shouldReindex, scrapeAndIndex } from "../hub/knowledgeScraper";
 
-function isPortAvailable(port: number): Promise<boolean> {
+async function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
     const server = net.createServer();
     server.listen(port, () => {
@@ -38,6 +39,19 @@ async function startServer() {
 
   // Initialiser le référentiel RGAA (thématiques + critères) au démarrage
   await initializeRgaaReferential();
+
+  // Bootstrap du Hub : auto-scrape si les collections sont vides
+  try {
+    if (await shouldReindex("all")) {
+      console.log("[Hub] Collections vides détectées — Lancement de l'indexation initiale...");
+      // Lancement en arrière-plan pour ne pas bloquer le démarrage du serveur
+      scrapeAndIndex("all").catch(err => {
+        console.error("[Hub] Échec de l'indexation initiale:", err.message);
+      });
+    }
+  } catch (err) {
+    console.warn("[Hub] Impossible de vérifier l'état des collections (ChromaDB KO ?)");
+  }
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
 
