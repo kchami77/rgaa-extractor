@@ -1,0 +1,213 @@
+{
+  "version": "4.1.2",
+  "generatedAt": "2026-02-21",
+  "source": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/",
+  "thematics": [
+    {
+      "id": 1,
+      "name": "Images",
+      "criteria": [
+        { "reference": "1.1", "title": "Chaque image porteuse d'information a-t-elle une alternative textuelle ?", "wcagLevel": "A", "tests": ["1.1.1","1.1.2","1.1.3","1.1.4","1.1.5","1.1.6","1.1.7"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.2", "title": "Chaque image de décoration est-elle correctement ignorée par les technologies d'assistance ?", "wcagLevel": "A", "tests": ["1.2.1","1.2.2","1.2.3"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.3", "title": "Pour chaque image porteuse d'information ayant une alternative textuelle, cette alternative est-elle pertinente (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["1.3.1","1.3.2","1.3.3","1.3.4","1.3.5","1.3.6","1.3.7","1.3.8","1.3.9"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.4", "title": "Pour chaque image utilisée comme CAPTCHA ou comme image-test, ayant une alternative textuelle, cette alternative permet-elle d'identifier la nature et la fonction de l'image ?", "wcagLevel": "A", "tests": ["1.4.1","1.4.2","1.4.3","1.4.4"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.5", "title": "Pour chaque image utilisée comme CAPTCHA, une solution d'accès alternatif au contenu ou à la fonction du CAPTCHA est-elle présente ?", "wcagLevel": "A", "tests": ["1.5.1"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.6", "title": "Chaque image porteuse d'information a-t-elle, si nécessaire, une description détaillée ?", "wcagLevel": "A", "tests": ["1.6.1","1.6.2","1.6.3","1.6.4","1.6.5","1.6.6","1.6.7","1.6.8","1.6.9"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.7", "title": "Pour chaque image porteuse d'information ayant une description détaillée, cette description est-elle pertinente ?", "wcagLevel": "A", "tests": ["1.7.1","1.7.2","1.7.3","1.7.4","1.7.5","1.7.6","1.7.7","1.7.8","1.7.9"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "1.8", "title": "Chaque image texte porteuse d'information, en l'absence d'un mécanisme de remplacement, doit si possible être remplacée par du texte stylé. Cette règle est-elle respectée (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["1.8.1","1.8.2","1.8.3","1.8.4","1.8.5"], "mappings": { "wcag": ["1.4.5"] } },
+        { "reference": "1.9", "title": "Chaque légende d'image est-elle, si nécessaire, correctement reliée à l'image correspondante ?", "wcagLevel": "A", "tests": ["1.9.1","1.9.2","1.9.3","1.9.4","1.9.5"], "mappings": { "wcag": ["1.1.1"] } }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Cadres",
+      "criteria": [
+        { "reference": "2.1", "title": "Chaque cadre a-t-il un titre de cadre ?", "wcagLevel": "A", "tests": ["2.1.1","2.1.2"], "mappings": { "wcag": ["4.1.2"] } },
+        { "reference": "2.2", "title": "Pour chaque cadre ayant un titre de cadre, ce titre de cadre est-il pertinent ?", "wcagLevel": "A", "tests": ["2.2.1"], "mappings": { "wcag": ["4.1.2"] } }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Couleurs",
+      "criteria": [
+        { "reference": "3.1", "title": "Dans chaque page web, l'information ne doit pas être donnée uniquement par la couleur. Cette règle est-elle respectée ?", "wcagLevel": "A", "tests": ["3.1.1","3.1.2","3.1.3","3.1.4","3.1.5","3.1.6"], "mappings": { "wcag": ["1.4.1"] } },
+        { "reference": "3.2", "title": "Dans chaque page web, le contraste entre la couleur du texte et la couleur de son arrière-plan est-il suffisamment élevé (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["3.2.1","3.2.2","3.2.3","3.2.4","3.2.5","3.2.6"], "mappings": { "wcag": ["1.4.3", "1.4.6"] } },
+        { "reference": "3.3", "title": "Dans chaque page web, les couleurs utilisées dans les composants d'interface ou les éléments porteurs d'informations sont-elles suffisamment contrastées (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["3.3.1","3.3.2","3.3.3","3.3.4"], "mappings": { "wcag": ["1.4.11"] } }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Multimédia",
+      "criteria": [
+        { "reference": "4.1", "title": "Chaque média temporel pré-enregistré a-t-il, si nécessaire, une transcription textuelle ou une audiodescription (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["4.1.1","4.1.2","4.1.3","4.1.4"], "mappings": { "wcag": ["1.2.1", "1.2.3"] } },
+        { "reference": "4.2", "title": "Pour chaque média temporel pré-enregistré ayant une transcription textuelle ou une audiodescription synchronisée, celles-ci sont-elles pertinentes (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["4.2.1","4.2.2","4.2.3"], "mappings": { "wcag": ["1.2.1", "1.2.3"] } },
+        { "reference": "4.3", "title": "Chaque média temporel synchronisé pré-enregistré a-t-il, si nécessaire, des sous-titres synchronisés (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["4.3.1","4.3.2","4.3.3"], "mappings": { "wcag": ["1.2.2"] } },
+        { "reference": "4.4", "title": "Pour chaque média temporel synchronisé pré-enregistré ayant des sous-titres synchronisés, ces sous-titres sont-ils pertinents ?", "wcagLevel": "AA", "tests": ["4.4.1","4.4.2"], "mappings": { "wcag": ["1.2.2"] } },
+        { "reference": "4.5", "title": "Chaque média temporel pré-enregistré a-t-il, si nécessaire, une audiodescription synchronisée (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["4.5.1","4.5.2","4.5.3","4.5.4","4.5.5","4.5.6"], "mappings": { "wcag": ["1.2.5"] } },
+        { "reference": "4.6", "title": "Pour chaque média temporel pré-enregistré ayant une audiodescription synchronisée, celle-ci est-elle pertinente ?", "wcagLevel": "AA", "tests": ["4.6.1","4.6.2"], "mappings": { "wcag": ["1.2.5"] } },
+        { "reference": "4.7", "title": "Chaque média temporel est-il clairement identifiable (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["4.7.1"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "4.8", "title": "Chaque objet non-temporel a-t-il, si nécessaire, une alternative (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["4.8.1","4.8.2","4.8.3","4.8.4","4.8.5"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "4.9", "title": "Pour chaque objet non-temporel ayant une alternative, cette alternative est-elle pertinente ?", "wcagLevel": "A", "tests": ["4.9.1"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "4.10", "title": "Chaque son déclenché automatiquement est-il contrôlable par l'utilisateur ?", "wcagLevel": "A", "tests": ["4.10.1","4.10.2","4.10.3"], "mappings": { "wcag": ["1.4.2"] } },
+        { "reference": "4.11", "title": "La consultation de chaque média temporel est-elle, si nécessaire, contrôlable par le clavier et tout dispositif de pointage ?", "wcagLevel": "A", "tests": ["4.11.1","4.11.2","4.11.3"], "mappings": { "wcag": ["2.1.1"] } },
+        { "reference": "4.12", "title": "La consultation de chaque média non-temporel est-elle contrôlable par le clavier et tout dispositif de pointage ?", "wcagLevel": "A", "tests": ["4.12.1","4.12.2"], "mappings": { "wcag": ["2.1.1"] } },
+        { "reference": "4.13", "title": "Chaque média temporel et non temporel est-il compatible avec les technologies d'assistance (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["4.13.1","4.13.2","4.13.3","4.13.4"], "mappings": { "wcag": ["4.1.2"] } }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Tableaux",
+      "criteria": [
+        { "reference": "5.1", "title": "Chaque tableau de données complexe a-t-il un résumé ?", "wcagLevel": "A", "tests": ["5.1.1","5.1.2","5.1.3","5.1.4"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.2", "title": "Pour chaque tableau de données complexe ayant un résumé, ce résumé est-il pertinent ?", "wcagLevel": "A", "tests": ["5.2.1"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.3", "title": "Pour chaque tableau de mise en forme, le contenu linéarisé reste-t-il compréhensible ?", "wcagLevel": "A", "tests": ["5.3.1"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.4", "title": "Pour chaque tableau de données ayant un titre, le titre est-il correctement associé au tableau de données ?", "wcagLevel": "A", "tests": ["5.4.1","5.4.2","5.4.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.5", "title": "Pour chaque tableau de données ayant un titre, ce titre est-il pertinent ?", "wcagLevel": "A", "tests": ["5.5.1","5.5.2"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.6", "title": "Pour chaque tableau de données, chaque en-tête de colonne et chaque en-tête de ligne sont-ils correctement déclarés ?", "wcagLevel": "A", "tests": ["5.6.1","5.6.2","5.6.3","5.6.4","5.6.5"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.7", "title": "Pour chaque tableau de données, la technique appropriée permettant d'associer chaque cellule de données à ses en-têtes est-elle utilisée (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["5.7.1","5.7.2","5.7.3","5.7.4","5.7.5"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "5.8", "title": "Chaque tableau de mise en forme ne doit pas utiliser d'éléments propres aux tableaux de données. Cette règle est-elle respectée ?", "wcagLevel": "A", "tests": ["5.8.1"], "mappings": { "wcag": ["1.3.1"] } }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Liens",
+      "criteria": [
+        { "reference": "6.1", "title": "Chaque lien est-il explicite (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["6.1.1","6.1.2","6.1.3","6.1.4","6.1.5"], "mappings": { "wcag": ["2.4.4", "2.4.9"] } },
+        { "reference": "6.2", "title": "Dans chaque page web, chaque lien a-t-il un intitulé ?", "wcagLevel": "A", "tests": ["6.2.1","6.2.2","6.2.3","6.2.4","6.2.5"], "mappings": { "wcag": ["2.4.4"] } }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Scripts",
+      "criteria": [
+        { "reference": "7.1", "title": "Chaque script est-il, si nécessaire, compatible avec les technologies d'assistance ?", "wcagLevel": "A", "tests": ["7.1.1","7.1.2","7.1.3"], "mappings": { "wcag": ["4.1.2"] } },
+        { "reference": "7.2", "title": "Pour chaque script ayant une alternative, cette alternative est-elle pertinente ?", "wcagLevel": "A", "tests": ["7.2.1","7.2.2"], "mappings": { "wcag": ["4.1.2"] } },
+        { "reference": "7.3", "title": "Chaque script est-il contrôlable par le clavier et tout dispositif de pointage (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["7.3.1","7.3.2","7.3.3","7.3.4"], "mappings": { "wcag": ["2.1.1"] } },
+        { "reference": "7.4", "title": "Pour chaque script qui initie un changement de contexte, l'utilisateur est-il averti ou en a-t-il le contrôle ?", "wcagLevel": "A", "tests": ["7.4.1","7.4.2"], "mappings": { "wcag": ["3.2.2"] } },
+        { "reference": "7.5", "title": "Dans chaque page web, les messages de statut sont-ils correctement restitués par les technologies d'assistance ?", "wcagLevel": "AA", "tests": ["7.5.1","7.5.2","7.5.3","7.5.4","7.5.5","7.5.6","7.5.7"], "mappings": { "wcag": ["4.1.3"] } }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Éléments obligatoires",
+      "criteria": [
+        { "reference": "8.1", "title": "Chaque page web est-elle définie par un type de document ?", "wcagLevel": "A", "tests": ["8.1.1","8.1.2","8.1.3"], "mappings": { "wcag": ["4.1.1"] } },
+        { "reference": "8.2", "title": "Pour chaque page web, le code source généré est-il valide selon le type de document spécifié ?", "wcagLevel": "A", "tests": ["8.2.1","8.2.2","8.2.3"], "mappings": { "wcag": ["4.1.1"] } },
+        { "reference": "8.3", "title": "Dans chaque page web, la langue par défaut est-elle présente ?", "wcagLevel": "A", "tests": ["8.3.1","8.3.2"], "mappings": { "wcag": ["3.1.1"] } },
+        { "reference": "8.4", "title": "Pour chaque page web ayant une langue par défaut, le code de langue est-il pertinent ?", "wcagLevel": "A", "tests": ["8.4.1"], "mappings": { "wcag": ["3.1.1"] } },
+        { "reference": "8.5", "title": "Chaque page web a-t-elle un titre de page ?", "wcagLevel": "A", "tests": ["8.5.1"], "mappings": { "wcag": ["2.4.2"] } },
+        { "reference": "8.6", "title": "Pour chaque page web ayant un titre de page, ce titre est-il pertinent ?", "wcagLevel": "A", "tests": ["8.6.1"], "mappings": { "wcag": ["2.4.2"] } },
+        { "reference": "8.7", "title": "Dans chaque page web, chaque changement de langue est-il indiqué dans le code source (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["8.7.1"], "mappings": { "wcag": ["3.1.2"] } },
+        { "reference": "8.8", "title": "Dans chaque page web, le code de langue de chaque changement de langue est-il valide et pertinent ?", "wcagLevel": "AA", "tests": ["8.8.1"], "mappings": { "wcag": ["3.1.2"] } },
+        { "reference": "8.9", "title": "Dans chaque page web, des balises ne doivent pas être utilisées uniquement à des fins de présentation. Cette règle est-elle respectée ?", "wcagLevel": "A", "tests": ["8.9.1"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "8.10", "title": "Dans chaque page web, les changements du sens de lecture sont-ils signalés ?", "wcagLevel": "A", "tests": ["8.10.1","8.10.2"], "mappings": { "wcag": ["1.3.2"] } }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Structuration de l'information",
+      "criteria": [
+        { "reference": "9.1", "title": "Dans chaque page web, l'information est-elle structurée par l'utilisation appropriée de titres ?", "wcagLevel": "A", "tests": ["9.1.1","9.1.2","9.1.3"], "mappings": { "wcag": ["1.3.1", "2.4.6"] } },
+        { "reference": "9.2", "title": "Dans chaque page web, la structure du document est-elle cohérente (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["9.2.1","9.2.2"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "9.3", "title": "Dans chaque page web, chaque liste est-elle correctement structurée ?", "wcagLevel": "A", "tests": ["9.3.1","9.3.2","9.3.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "9.4", "title": "Dans chaque page web, chaque citation est-elle correctement indiquée ?", "wcagLevel": "A", "tests": ["9.4.1","9.4.2","9.4.3","9.4.4"], "mappings": { "wcag": ["1.3.1"] } }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Présentation de l'information",
+      "criteria": [
+        { "reference": "10.1", "title": "Dans le site web, des feuilles de styles sont-elles utilisées pour contrôler la présentation de l'information ?", "wcagLevel": "A", "tests": ["10.1.1","10.1.2","10.1.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "10.2", "title": "Dans chaque page web, le contenu visible porteur d'information reste-t-il présent lorsque les feuilles de styles sont désactivées ?", "wcagLevel": "A", "tests": ["10.2.1"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "10.3", "title": "Dans chaque page web, l'information reste-t-elle compréhensible lorsque les feuilles de styles sont désactivées ?", "wcagLevel": "A", "tests": ["10.3.1"], "mappings": { "wcag": ["1.3.2"] } },
+        { "reference": "10.4", "title": "Dans chaque page web, le texte reste-t-il lisible lorsque la taille des caractères est augmentée jusqu'à 200% au moins (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["10.4.1","10.4.2","10.4.3"], "mappings": { "wcag": ["1.4.4"] } },
+        { "reference": "10.5", "title": "Dans chaque page web, les déclarations CSS de couleur de fond et de police sont-elles correctement utilisées ?", "wcagLevel": "AA", "tests": ["10.5.1","10.5.2","10.5.3","10.5.4","10.5.5","10.5.6"], "mappings": { "wcag": ["1.4.3"] } },
+        { "reference": "10.6", "title": "Dans chaque page web, chaque lien dont la nature n'est pas évidente est-il visible par rapport au texte environnant ?", "wcagLevel": "A", "tests": ["10.6.1","10.6.2"], "mappings": { "wcag": ["1.4.1"] } },
+        { "reference": "10.7", "title": "Dans chaque page web, pour chaque élément recevant le focus, la prise de focus est-elle visible ?", "wcagLevel": "AA", "tests": ["10.7.1","10.7.2","10.7.3"], "mappings": { "wcag": ["2.4.7"] } },
+        { "reference": "10.8", "title": "Pour chaque page web, les contenus cachés ont-ils vocation à être ignorés par les technologies d'assistance ?", "wcagLevel": "A", "tests": ["10.8.1","10.8.2","10.8.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "10.9", "title": "Dans chaque page web, l'information ne doit pas être donnée uniquement par la forme, taille ou position. Cette règle est-elle respectée ?", "wcagLevel": "A", "tests": ["10.9.1","10.9.2","10.9.3"], "mappings": { "wcag": ["1.3.3"] } },
+        { "reference": "10.10", "title": "Dans chaque page web, l'information ne doit pas être donnée par la forme, taille ou position uniquement. Cette règle est-elle respectée ?", "wcagLevel": "A", "tests": ["10.10.1","10.10.2","10.10.3"], "mappings": { "wcag": ["1.3.3"] } },
+        { "reference": "10.11", "title": "Pour chaque page web, les contenus peuvent-ils être présentés sans perte d'information ou de fonctionnalité et sans avoir recours à un défilement dans deux dimensions pour : les pages en mode portrait avec une largeur d'au moins 320 pixels ; les pages en mode paysage avec une hauteur d'au moins 256 pixels (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["10.11.1", "10.11.2"], "mappings": { "wcag": ["1.4.10"] } },
+        { "reference": "10.12", "title": "Dans chaque page web, les propriétés d'espacement du texte peuvent-elles être redéfinies par l'utilisateur sans perte de contenu ou de fonctionnalité (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["10.12.1","10.12.2","10.12.3","10.12.4"], "mappings": { "wcag": ["1.4.12"] } },
+        { "reference": "10.13", "title": "Dans chaque page web, les contenus additionnels apparaissant à la prise de focus ou au survol d'un composant d'interface sont-ils contrôlables par l'utilisateur (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["10.13.1","10.13.2","10.13.3","10.13.4"], "mappings": { "wcag": ["1.4.13"] } },
+        { "reference": "10.14", "title": "Dans chaque page web, les contenus additionnels apparaissant via les styles CSS uniquement peuvent-ils être rendus visibles au clavier et par tout dispositif de pointage ?", "wcagLevel": "A", "tests": ["10.14.1","10.14.2","10.14.3"], "mappings": { "wcag": ["2.1.1"] } }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Formulaires",
+      "criteria": [
+        { "reference": "11.1", "title": "Chaque champ de formulaire a-t-il une étiquette ?", "wcagLevel": "A", "tests": ["11.1.1","11.1.2","11.1.3","11.1.4","11.1.5","11.1.6","11.1.7","11.1.8"], "mappings": { "wcag": ["1.3.1", "3.3.2"] } },
+        { "reference": "11.2", "title": "Chaque étiquette associée à un champ de formulaire est-elle pertinente (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["11.2.1","11.2.2","11.2.3","11.2.4","11.2.5","11.2.6"], "mappings": { "wcag": ["1.3.1", "2.4.6"] } },
+        { "reference": "11.3", "title": "Dans chaque formulaire, chaque étiquette associée à un champ de formulaire ayant la même fonction et répétée plusieurs fois dans une même page ou dans un ensemble de pages est-elle cohérente ?", "wcagLevel": "AA", "tests": ["11.3.1","11.3.2"], "mappings": { "wcag": ["3.2.4"] } },
+        { "reference": "11.4", "title": "Pour chaque champ de formulaire ayant une étiquette qui n'est pas affichée, le champ de formulaire possède-t-il une étiquette visible permettant de comprendre la nature de la saisie attendue ?", "wcagLevel": "A", "tests": ["11.4.1","11.4.2","11.4.3"], "mappings": { "wcag": ["3.3.2"] } },
+        { "reference": "11.5", "title": "Dans chaque formulaire, les champs de même nature sont-ils regroupés, si nécessaire ?", "wcagLevel": "A", "tests": ["11.5.1","11.5.2","11.5.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "11.6", "title": "Dans chaque formulaire, chaque regroupement de champs de formulaire a-t-il une légende ?", "wcagLevel": "A", "tests": ["11.6.1","11.6.2","11.6.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "11.7", "title": "Dans chaque formulaire, la légende associée à un groupement de champs est-elle pertinente ?", "wcagLevel": "A", "tests": ["11.7.1","11.7.2","11.7.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "11.8", "title": "Dans chaque formulaire, les items de même nature d'une liste de choix sont-ils regroupés de manière pertinente ?", "wcagLevel": "A", "tests": ["11.8.1","11.8.2","11.8.3"], "mappings": { "wcag": ["1.3.1"] } },
+        { "reference": "11.9", "title": "Dans chaque formulaire, l'intitulé de chaque bouton est-il pertinent (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["11.9.1","11.9.2","11.9.3","11.9.4","11.9.5","11.9.6"], "mappings": { "wcag": ["2.4.6"] } },
+        { "reference": "11.10", "title": "Dans chaque formulaire, le contrôle de saisie est-il utilisé de manière pertinente (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["11.10.1","11.10.2","11.10.3","11.10.4","11.10.5","11.10.6","11.10.7"], "mappings": { "wcag": ["3.3.1", "3.3.2", "3.3.3", "3.3.4"] } },
+        { "reference": "11.11", "title": "Dans chaque formulaire, le contrôle de saisie est-il accompagné, si nécessaire, de suggestions facilitant la correction des erreurs de saisie ?", "wcagLevel": "AA", "tests": ["11.11.1","11.11.2","11.11.3"], "mappings": { "wcag": ["3.3.3"] } },
+        { "reference": "11.12", "title": "Pour chaque formulaire qui modifie ou supprime des données, ou qui transmet des réponses à un test ou à un examen, ou dont la validation a des conséquences financières ou juridiques, les données saisies peuvent-elles être modifiées, mises à jour ou récupérées par l'utilisateur ?", "wcagLevel": "AA", "tests": ["11.12.1","11.12.2"], "mappings": { "wcag": ["3.3.4"] } },
+        { "reference": "11.13", "title": "La finalité d'un champ de saisie peut-elle être déduite pour faciliter le remplissage automatique des champs avec les données de l'utilisateur ?", "wcagLevel": "AA", "tests": ["11.13.1","11.13.2","11.13.3"], "mappings": { "wcag": ["1.3.5"] } }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Navigation",
+      "criteria": [
+        { "reference": "12.1", "title": "Chaque ensemble de pages dispose-t-il de deux systèmes de navigation différents, au moins (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["12.1.1","12.1.2"], "mappings": { "wcag": ["2.4.5"] } },
+        { "reference": "12.2", "title": "Dans chaque ensemble de pages, le menu et les barres de navigation sont-ils toujours à la même place (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["12.2.1","12.2.2"], "mappings": { "wcag": ["3.2.3"] } },
+        { "reference": "12.3", "title": "La page plan du site est-elle pertinente ?", "wcagLevel": "AA", "tests": ["12.3.1","12.3.2"], "mappings": { "wcag": ["2.4.5"] } },
+        { "reference": "12.4", "title": "Dans chaque page web, le moteur de recherche et l'accès au plan du site sont-ils ergonomiques (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["12.4.1","12.4.2","12.4.3"], "mappings": { "wcag": ["2.4.5"] } },
+        { "reference": "12.5", "title": "Dans chaque page web, les liens d'évitement ou d'accès rapide à des groupes de liens importants sont-ils présents (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["12.5.1","12.5.2","12.5.3"], "mappings": { "wcag": ["2.4.1"] } },
+        { "reference": "12.6", "title": "Les zones de regroupement de contenus présentes dans plusieurs pages web (zones d'en-tête, de navigation principale, de contenu principal, de pied de page et de moteur de recherche) peuvent-elles être atteintes ou évitées ?", "wcagLevel": "A", "tests": ["12.6.1","12.6.2","12.6.3","12.6.4","12.6.5","12.6.6"], "mappings": { "wcag": ["2.4.1"] } },
+        { "reference": "12.7", "title": "Dans chaque page web, un lien d'évitement ou d'accès rapide à la zone de contenu principale est-il présent (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["12.7.1","12.7.2","12.7.3"], "mappings": { "wcag": ["2.4.1"] } },
+        { "reference": "12.8", "title": "Dans chaque page web, l'ordre de tabulation est-il cohérent ?", "wcagLevel": "A", "tests": ["12.8.1","12.8.2"], "mappings": { "wcag": ["2.4.3"] } },
+        { "reference": "12.9", "title": "Dans chaque page web, la navigation ne doit pas contenir de piège au clavier. Cette règle est-elle respectée ?", "wcagLevel": "A", "tests": ["12.9.1","12.9.2","12.9.3"], "mappings": { "wcag": ["2.1.2"] } },
+        { "reference": "12.10", "title": "Dans chaque page web, les raccourcis clavier n'utilisant qu'une seule touche (lettre minuscule ou majuscule, ponctuation, chiffre ou symbole) sont-ils contrôlables par l'utilisateur ?", "wcagLevel": "A", "tests": ["12.10.1","12.10.2","12.10.3"], "mappings": { "wcag": ["2.1.4"] } },
+        { "reference": "12.11", "title": "Dans chaque page web, les contenus additionnels apparaissant au survol, à la prise de focus ou à l'activation d'un composant d'interface sont-ils si nécessaire atteignables au clavier ?", "wcagLevel": "A", "tests": ["12.11.1","12.11.2","12.11.3","12.11.4","12.11.5"], "mappings": { "wcag": ["1.4.13"] } }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Consultation",
+      "criteria": [
+        { "reference": "13.1", "title": "Pour chaque page web, l'utilisateur a-t-il le contrôle de chaque limite de temps modifiant le contenu (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["13.1.1","13.1.2","13.1.3","13.1.4","13.1.5","13.1.6"], "mappings": { "wcag": ["2.2.1"] } },
+        { "reference": "13.2", "title": "Dans chaque page web, l'ouverture d'une nouvelle fenêtre ou d'un nouvel onglet ne doit pas être déclenchée sans action de l'utilisateur. Cette règle est-elle respectée (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["13.2.1","13.2.2","13.2.3"], "mappings": { "wcag": ["3.2.1", "3.2.2", "3.2.5"] } },
+        { "reference": "13.3", "title": "Dans chaque page web, chaque document bureautique en téléchargement possède-t-il, si nécessaire, une version accessible (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["13.3.1","13.3.2","13.3.3","13.3.4"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "13.4", "title": "Pour chaque document bureautique ayant une version accessible, cette version offre-t-elle la même information ?", "wcagLevel": "A", "tests": ["13.4.1"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "13.5", "title": "Dans chaque page web, chaque contenu cryptique (art ASCII, émoticon, syntaxe cryptique) a-t-il une alternative ?", "wcagLevel": "A", "tests": ["13.5.1","13.5.2","13.5.3"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "13.6", "title": "Dans chaque page web, pour chaque contenu cryptique ayant une alternative, cette alternative est-elle pertinente ?", "wcagLevel": "A", "tests": ["13.6.1"], "mappings": { "wcag": ["1.1.1"] } },
+        { "reference": "13.7", "title": "Dans chaque page web, les changements brusques de luminosité ou les effets de flash sont-ils correctement utilisés ?", "wcagLevel": "A", "tests": ["13.7.1","13.7.2","13.7.3","13.7.4","13.7.5"], "mappings": { "wcag": ["2.3.1"] } },
+        { "reference": "13.8", "title": "Dans chaque page web, chaque contenu en mouvement ou clignotant est-il contrôlable par l'utilisateur ?", "wcagLevel": "A", "tests": ["13.8.1","13.8.2","13.8.3"], "mappings": { "wcag": ["2.2.2"] } },
+        { "reference": "13.9", "title": "Dans chaque page web, le contenu proposé est-il consultable quelle que soit l'orientation de l'écran (hors cas particuliers) ?", "wcagLevel": "AA", "tests": ["13.9.1","13.9.2"], "mappings": { "wcag": ["1.3.4"] } },
+        { "reference": "13.10", "title": "Dans chaque page web, les fonctionnalités utilisables ou disponibles au moyen d'un geste complexe peuvent-elles être également disponibles au moyen d'un geste simple (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["13.10.1","13.10.2","13.10.3","13.10.4"], "mappings": { "wcag": ["2.5.1"] } },
+        { "reference": "13.11", "title": "Dans chaque page web, les actions déclenchées au moyen d'un dispositif de pointage sur un point unique de l'écran peuvent-elles faire l'objet d'une annulation (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["13.11.1","13.11.2","13.11.3","13.11.4"], "mappings": { "wcag": ["2.5.2"] } },
+        { "reference": "13.12", "title": "Dans chaque page web, les fonctionnalités qui impliquent un mouvement de l'appareil ou vers l'appareil peuvent-elles être satisfaites par des composants d'interface utilisateur et le déplacement peut-il être désactivé (hors cas particuliers) ?", "wcagLevel": "A", "tests": ["13.12.1","13.12.2","13.12.3","13.12.4"], "mappings": { "wcag": ["2.5.4"] } }
+      ]
+    }
+  ],
+  "glossary": [
+    { "term": "Alternative textuelle", "definition": "Information associée à l'image qui a pour vocation de reprendre le contenu informatif véhiculé par l'image pour les utilisateurs qui n'y ont pas accès (déficients visuels, moteurs ou cognitifs). Selon le type d'image considéré, l'alternative peut être fournie par le code source ou dans un texte adjacent." },
+    { "term": "Image porteuse d'information", "definition": "Image qui véhicule une information nécessaire à la compréhension du contenu auquel elle est associée." },
+    { "term": "Image de décoration", "definition": "Image qui n'a pas de signification particulière et dont le rôle est purement décoratif. Si une alternative est fournie pour une image de décoration, elle doit être vide (alt=\"\")." },
+    { "term": "Image texte", "definition": "Image dont le contenu principal est du texte. Exemples : logo avec du texte, bouton sous forme d'image avec du texte." },
+    { "term": "Technologie d'assistance", "definition": "Logiciel permettant aux personnes en situation de handicap d'accéder aux contenus numériques. Exemples : lecteur d'écran, loupe d'écran, switch, trackball." },
+    { "term": "Lecteur d'écran", "definition": "Logiciel qui restitue sous forme sonore ou braille le contenu affiché à l'écran. Principaux lecteurs d'écran : NVDA, JAWS, VoiceOver (Apple), TalkBack (Android), Orca (Linux)." },
+    { "term": "Contenu alternatif", "definition": "Contenu destiné à remplacer un contenu qui ne peut pas être perçu ou compris par certains utilisateurs. Le contenu alternatif doit fournir une information équivalente à celle du contenu original." },
+    { "term": "Contraste", "definition": "Différence de luminosité entre un premier-plan (texte ou composant d'interface) et son arrière-plan. Le contraste se mesure par un ratio. WCAG 2.2 exige un ratio minimum de 4.5:1 pour le texte normal (niveau AA)." },
+    { "term": "Aria-label", "definition": "Attribut HTML permettant de fournir une alternative textuelle à un composant d'interface. Utilisé quand aucun texte visible n'est disponible pour nommer le composant." },
+    { "term": "Aria-labelledby", "definition": "Attribut HTML référençant l'ID d'un élément dont le contenu textuel servira de nom accessible au composant d'interface." },
+    { "term": "Aria-describedby", "definition": "Attribut HTML référençant l'ID d'un élément dont le contenu textuel servira de description accessible à un composant d'interface." },
+    { "term": "Aria-hidden", "definition": "Attribut permettant de masquer un élément aux technologies d'assistance, sans l'enlever de l'affichage visuel. À utiliser avec précaution." },
+    { "term": "Role ARIA", "definition": "Attribut HTML définissant la nature sémantique d'un composant d'interface (ex: role='button', role='navigation', role='dialog'). Permet aux technologies d'assistance de correctement interpréter le composant." },
+    { "term": "Focus", "definition": "État d'un élément interactif recevant les événements clavier. La gestion du focus est cruciale pour l'accessibilité au clavier." },
+    { "term": "Application web", "definition": "Au sens du RGAA, une application web est un ensemble de pages web partageant une thématique commune, répondant aux critères de pertinence et d'accessibilité dans la continuité." },
+    { "term": "Lien d'évitement", "definition": "Lien permettant d'accéder directement au contenu principal ou de naviguer entre les zones principales de la page, sans parcourir l'intégralité du contenu." },
+    { "term": "Transcription textuelle", "definition": "Texte reprenant l'ensemble des informations contenues dans un contenu audio ou vidéo, présenté dans une page web indépendante ou dans la même page." },
+    { "term": "Sous-titres synchronisés", "definition": "Texte affiché en synchronisation avec la piste audio d'une vidéo, reprenant l'ensemble des informations sonores susceptibles d'être utiles à la compréhension du contenu." },
+    { "term": "Audiodescription", "definition": "Voix narrative synchronisée avec une vidéo, décrivant l'information visuelle importante non transmise par la piste audio originale." },
+    { "term": "CAPTCHA", "definition": "Système de test permettant de distinguer un humain d'un robot grâce à un défi. Doit être accompagné d'une alternative accessible (test audio, alternative textuelle, etc.)." }
+  ]
+}
