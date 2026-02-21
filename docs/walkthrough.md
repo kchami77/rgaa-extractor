@@ -52,9 +52,11 @@ Ouvrez un terminal (PowerShell ou CMD) à la racine du projet :
 # Installation des librairies Node
 pnpm install
 
-# Installation du moteur de recherche WAI-ARIA (Scraping JS support)
+# Installation du moteur de navigation (Indispensable pour le Scraping)
 pnpm exec playwright install chromium
 ```
+> [!TIP]
+> **Pourquoi cette commande ?** Le projet utilise un "robot" (**Playwright**) pour aller lire des sites web complexes. Ce robot a besoin d'un "véhicule" (**Chromium**, le moteur de Google Chrome) pour se déplacer sur le web et récupérer les informations d'accessibilité. Sans cela, la récupération de données (Scraping) ne pourra pas fonctionner.
 
 ---
 
