@@ -326,6 +326,37 @@ export async function indexDocumentBatch(inputs: IndexDocumentInput[]): Promise<
   }
 }
 
+/**
+ * Recherche purement vectorielle dans les collections de constats.
+ * Utilisé par FindingsLibrary pour la "Recherche Intelligente".
+ */
+export async function searchSimilarFindingsInChroma(
+  query: string,
+  topK: number = 50
+): Promise<{ id: string; score: number }[]> {
+  const chromaOk = await isChromaAvailable();
+  if (!chromaOk) return [];
+
+  try {
+    const queryEmbedding = await embed(query);
+    
+    // On cherche dans les collections de constats
+    const results = await searchAllCollections(
+      queryEmbedding, 
+      ["rgaa_findings"], 
+      undefined
+    );
+    
+    return results.map(r => ({
+      id: r.id,
+      score: r.score
+    }));
+  } catch (e) {
+    console.error("[RAG] error in searchSimilarFindingsInChroma:", (e as Error).message);
+    return [];
+  }
+}
+
 export const ragEngine = {
   askAccessibility,
   analyzeCode,

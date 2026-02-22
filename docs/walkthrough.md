@@ -6,7 +6,8 @@
 - [x] Phase 14 : Polissage UI & Conformité Premium ✅
 - [x] Phase 15 : Éradication des Hallucinations ✅
 - [x] Phase 16 : Désactivation des Techniques WCAG ✅
-- [x] Phase 17 : Suppression Expertise & Rédaction ✅
+- [x] Phase 17 : **Nettoyage Expertise & Rédaction** (Simplification cœur)
+- [x] Phase 18 : **Recherche Sémantique (Smart Library)** (IA Vectorielle)
 
 ## 🌟 Focus Perfection (Phase 13)
 ... (identique) ...

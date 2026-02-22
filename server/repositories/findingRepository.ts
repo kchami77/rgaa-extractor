@@ -157,8 +157,8 @@ export async function getEnrichedFindings(filters: {
       const vectorResults = await searchSimilarFindingsInChroma(filters.q, 50);
 
       if (vectorResults.length > 0) {
-        // Extraire les hashes des IDs (finding-xxxxx ou validated-xxxxx)
-        const hashes = vectorResults.map((r: { id: string }) => r.id.replace(/^(finding|validated)-/, ""));
+        // Extraire les hashes des IDs (finding-xxxxx, validated-xxxxx ou template-xxxxx)
+        const hashes = vectorResults.map((r: { id: string }) => r.id.replace(/^(finding|validated|template)-/, ""));
 
         // Trouver les templateIds correspondants aux hashes
         const templateRows = await db
