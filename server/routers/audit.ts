@@ -107,8 +107,11 @@ export const auditRouter = router({
         q: z.string().optional(),
       })
     )
-    .query(async ({ input }) => {
-      return await getEnrichedFindings(input);
+    .query(async ({ input, ctx }) => {
+      return await getEnrichedFindings({
+        ...input,
+        userId: ctx.user.id,
+      });
     }),
 
   // Traiter un rapport d'audit (parser et extraire les constats)

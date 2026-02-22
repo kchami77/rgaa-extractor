@@ -1,3 +1,4 @@
+import { eq, and, or, inArray, sql } from "drizzle-orm";
 import { findings, auditReports, rgaaCriteria, findingTemplates } from "../../drizzle/schema";
 import { getDb } from "./connection";
 import { searchSimilarFindingsInChroma } from "../hub/ragEngine";
@@ -117,6 +118,7 @@ export async function getStatsByImpact() {
  * Effectue un JOIN entre findings, audit_reports et rgaa_criteria
  */
 export async function getEnrichedFindings(filters: {
+  userId: number; // Obligatoire pour l'isolation
   reportId?: number;
   reportIds?: number[];
   pageNames?: string[];
@@ -129,6 +131,10 @@ export async function getEnrichedFindings(filters: {
   if (!db) return [];
 
   const conditions = [];
+  
+  // S21-1 FIX : Isolation stricte par utilisateur
+  conditions.push(eq(auditReports.userId, filters.userId));
+
   if (filters.reportId !== undefined) {
     conditions.push(eq(findings.reportId, filters.reportId));
   }
@@ -200,15 +206,14 @@ export async function getEnrichedFindings(filters: {
       thematicNumber: findings.thematicNumber,
       criterionReference: findings.criterionReference,
       createdAt: findings.createdAt,
-      // Report data
+      // Report data (Optimisé : On retire auditedPages qui est trop lourd ici)
       reportFileName: auditReports.fileName,
       reportSiteUrl: auditReports.siteUrl,
-      reportAuditedPages: auditReports.auditedPages,
       // Criterion data
       criterionLabel: rgaaCriteria.label,
     })
     .from(findings)
-    .leftJoin(auditReports, eq(findings.reportId, auditReports.id))
+    .innerJoin(auditReports, eq(findings.reportId, auditReports.id)) // innerJoin car le rapport doit appartenir à l'user
     .leftJoin(rgaaCriteria, eq(findings.criterionId, rgaaCriteria.id));
 
   if (conditions.length > 0) {
