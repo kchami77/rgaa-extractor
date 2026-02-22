@@ -121,10 +121,10 @@ function parseRgaaHtml(html: string): ParsedCriterion[] {
     // Extraire la question du critère (premier fragment de texte significatif)
     const title = stripHtml(rawBlock).slice(0, 250).trim();
 
-    // Extraire les tests mentionnés (pattern "1.1.1", "1.1.2")
-    const testRefs = Array.from(rawBlock.matchAll(/\b(\d+\.\d+\.\d+)\b/g)).map(
+    // Extraire les tests mentionnés (pattern "1.1.1", "1.1.2") et dédupliquer
+    const testRefs = Array.from(new Set(Array.from(rawBlock.matchAll(/\b(\d+\.\d+\.\d+)\b/g)).map(
       (m) => m[1],
-    );
+    )));
 
     const raw = `Critère RGAA ${ref} [${thematic}] : ${title}`;
 
@@ -346,8 +346,8 @@ async function scrapeRgaaLive(
             type: "test",
             lang: "fr",
             scrapedAt,
-          } as any,
-        } as any);
+          },
+        });
       });
     });
   } catch (e) {

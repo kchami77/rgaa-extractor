@@ -64,7 +64,7 @@ export async function scrapeWaiAria(): Promise<{ documents: ScrapedDocument[]; r
     await page.waitForSelector("a[href*='/patterns/']", { timeout: 15_000 }).catch(() => null);
 
     const patternLinks = await page.$$eval(
-      "a[href*='/WAI/ARIA/apg/patterns/']",
+      "main a[href*='/patterns/'], article a[href*='/patterns/'], .patterns-list a[href*='/patterns/'], a[href*='/apg/patterns/']",
       (anchors) =>
         anchors
           .map((a) => ({
@@ -72,10 +72,13 @@ export async function scrapeWaiAria(): Promise<{ documents: ScrapedDocument[]; r
             title: (a as HTMLAnchorElement).textContent?.trim() ?? "",
           }))
           .filter(
-            ({ href, title }) =>
-              href.includes("/patterns/") &&
-              !href.endsWith("/patterns/") &&
-              title.length > 3,
+            ({ href, title }) => {
+              const h = href.toLowerCase();
+              return h.includes("/patterns/") &&
+                     !h.endsWith("/patterns/") &&
+                     !h.includes("filter=") &&
+                     title.length > 2;
+            }
           ),
     );
 

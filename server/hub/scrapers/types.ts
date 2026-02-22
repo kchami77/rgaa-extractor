@@ -36,6 +36,9 @@ export interface ScrapedDocument {
     /** Langue du document. */
     lang: "fr" | "en";
 
+    /** Référence du test RGAA (ex: "1.1.1"). */
+    test?: string;
+
     /** Date de scraping ISO 8601. */
     scrapedAt: string;
   };
@@ -138,7 +141,6 @@ export async function fetchWithRetry(
       clearTimeout(timeoutId);
       return res;
     } catch (err) {
-      clearTimeout(timeoutId);
       lastError = err as Error;
 
       if (attempt < retries - 1) {

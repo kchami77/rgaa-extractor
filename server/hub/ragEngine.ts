@@ -306,23 +306,42 @@ export async function indexDocument(input: IndexDocumentInput): Promise<void> {
  * Indexe un lot de documents (plus efficace pour le bootstrap).
  */
 export async function indexDocumentBatch(inputs: IndexDocumentInput[]): Promise<void> {
+  // S19-1 FIX : Déduplication immédiate par ID pour éviter les erreurs ChromaDB
+  const uniqueInputs = new Map<string, IndexDocumentInput>();
+  inputs.forEach(input => {
+    // Si doublon, le dernier gagne (ou on pourrait garder le premier, peu importe ici car le texte est censé être identique)
+    uniqueInputs.set(`${input.collection}|${input.id}`, input);
+  });
+
+  const deduplicated = Array.from(uniqueInputs.values());
+  const duplicateCount = inputs.length - deduplicated.length;
+  if (duplicateCount > 0) {
+    console.log(`[RAG] indexDocumentBatch : ${duplicateCount} doublons filtrés sur ${inputs.length} documents.`);
+  }
+
   // Vectoriser en batch par collection pour minimiser les appels API
   const byCollection = new Map<ChromaCollectionName, IndexDocumentInput[]>();
-  for (const input of inputs) {
+  for (const input of deduplicated) {
     const existing = byCollection.get(input.collection) ?? [];
     existing.push(input);
     byCollection.set(input.collection, existing);
   }
 
   for (const [col, docs] of Array.from(byCollection.entries())) {
-    const embeddings = await Promise.all(docs.map((d: IndexDocumentInput) => embed(d.text)));
-    const chromaDocs: ChromaDocument[] = docs.map((d: IndexDocumentInput, i: number) => ({
-      id: d.id,
-      text: d.text,
-      embedding: embeddings[i],
-      metadata: d.metadata,
-    }));
-    await upsertDocuments(col, chromaDocs);
+    try {
+      const embeddings = await Promise.all(docs.map((d: IndexDocumentInput) => embed(d.text)));
+      const chromaDocs: ChromaDocument[] = docs.map((d: IndexDocumentInput, i: number) => ({
+        id: d.id,
+        text: d.text,
+        embedding: embeddings[i],
+        metadata: d.metadata,
+      }));
+      await upsertDocuments(col, chromaDocs);
+    } catch (e) {
+      console.error(`[RAG] Erreur lors de l'upsert batch dans ${col}:`, (e as Error).message);
+      // Optionnel : on pourrait re-tenter un par un ici, mais le dédoublage devrait suffire
+      throw e;
+    }
   }
 }
 
