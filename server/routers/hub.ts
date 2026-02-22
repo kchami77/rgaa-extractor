@@ -62,16 +62,18 @@ export const hubRouter = router({
 
   /** Lance manuellement le scraping et l'indexation. */
   triggerReindex: protectedProcedure
-    .input(z.object({ source: ScraperSourceSchema }))
+    .input(z.object({ 
+      source: ScraperSourceSchema,
+      reset: z.boolean().optional().default(false)
+    }))
     .mutation(async ({ input }) => {
       if (isScraping()) {
         throw new Error("Un scraping est déjà en cours.");
       }
       
-      // On lance en tâche de fond pour ne pas bloquer la requête HTTP,
-      // l'UI polle via getScrapeStatus.
+      // On lance en tâche de fond
       setImmediate(() => {
-        scrapeAndIndex(input.source).catch(err => {
+        scrapeAndIndex(input.source, input.reset).catch(err => {
           console.error("[Hub/Router] Erreur triggerReindex async:", err);
         });
       });

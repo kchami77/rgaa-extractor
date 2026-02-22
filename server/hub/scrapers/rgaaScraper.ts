@@ -13,10 +13,14 @@
  * Fallback : server/hub/data/rgaa-4.1.2.json (toujours disponible)
  */
 
+import { fileURLToPath } from "url";
 import * as path from "path";
 import * as fs from "fs/promises";
 import { fetchWithRetry, makeScrapedDocumentId, stripHtml } from "./types";
 import type { ScrapedDocument, ScrapeResult } from "./types";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const RGAA_CRITERIA_URL =
   "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/";
@@ -61,6 +65,22 @@ interface RgaaFallbackData {
 
 // ─── Parse HTML live ──────────────────────────────────────────────────────────
 
+const RGAA_THEME_NAMES: Record<string, string> = {
+  "1": "Images",
+  "2": "Cadres",
+  "3": "Couleurs",
+  "4": "Multimédia",
+  "5": "Tableaux",
+  "6": "Liens",
+  "7": "Scripts",
+  "8": "Éléments obligatoires",
+  "9": "Structuration de l'information",
+  "10": "Présentation de l'information",
+  "11": "Formulaires",
+  "12": "Navigation",
+  "13": "Consultation",
+};
+
 interface ParsedCriterion {
   reference: string;
   thematic: string;
@@ -96,7 +116,7 @@ function parseRgaaHtml(html: string): ParsedCriterion[] {
 
     // Extraire le numéro de thématique depuis la référence (ex: "1.3" → "1")
     const thematicNum = ref.split(".")[0];
-    const thematic = thematicMap.get(thematicNum) ?? `Thématique ${thematicNum}`;
+    const thematic = thematicMap.get(thematicNum) ?? RGAA_THEME_NAMES[thematicNum] ?? `Thématique ${thematicNum}`;
 
     // Extraire la question du critère (premier fragment de texte significatif)
     const title = stripHtml(rawBlock).slice(0, 250).trim();
@@ -204,22 +224,20 @@ function buildDocumentsFromFallback(
       },
     });
 
-    // 1 doc par critère
+    // 1 doc par critère + 1 doc par TEST
     for (const criterion of thematic.criteria) {
       const wcagRef = criterion.mappings?.wcag?.join(", ") ?? "";
-      const testsList = criterion.tests?.join(", ") ?? "";
-      const text = [
+      
+      // Document de base du critère
+      const critText = [
         `Critère RGAA ${criterion.reference} [${thematic.name}] : ${criterion.title}`,
         criterion.wcagLevel ? `Niveau WCAG : ${criterion.wcagLevel}` : "",
         wcagRef ? `Correspondances WCAG : ${wcagRef}` : "",
-        testsList ? `Tests : ${testsList}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n");
+      ].filter(Boolean).join("\n");
 
       docs.push({
-        id: makeScrapedDocumentId("rgaa", criterion.reference, text),
-        text,
+        id: makeScrapedDocumentId("rgaa", `crit-${criterion.reference}`, critText),
+        text: critText,
         collection: "rgaa_referential",
         metadata: {
           source: "rgaa",
@@ -231,6 +249,28 @@ function buildDocumentsFromFallback(
           scrapedAt,
         },
       });
+
+      // Documents ATOMIQUES par TEST
+      if (criterion.tests) {
+        for (const testRef of criterion.tests) {
+          const testText = `Test RGAA ${testRef} [Thématique : ${thematic.name}] : Ce test vérifie la conformité au critère ${criterion.reference} (${criterion.title}).`;
+          docs.push({
+            id: makeScrapedDocumentId("rgaa", `test-${testRef}`, testText),
+            text: testText,
+            collection: "rgaa_referential",
+            metadata: {
+              source: "rgaa",
+              url: `${RGAA_CRITERIA_URL}#${testRef}`,
+              criterion: criterion.reference,
+              test: testRef,
+              thematic: thematic.name,
+              type: "test",
+              lang: "fr",
+              scrapedAt,
+            },
+          });
+        }
+      }
     }
   }
 
@@ -272,11 +312,12 @@ async function scrapeRgaaLive(
     const html = await res.text();
     const criteria = parseRgaaHtml(html);
 
-    for (const c of criteria) {
-      const text = c.raw + (c.tests.length > 0 ? `\nTests : ${c.tests.join(", ")}` : "");
+    criteria.forEach((c) => {
+      // Document du critère
+      const critText = `Critère RGAA ${c.reference} [${c.thematic}] : ${c.title}`;
       documents.push({
-        id: makeScrapedDocumentId("rgaa", c.reference, text),
-        text: text.slice(0, 1200),
+        id: makeScrapedDocumentId("rgaa", `crit-${c.reference}`, critText),
+        text: critText,
         collection: "rgaa_referential",
         metadata: {
           source: "rgaa",
@@ -288,7 +329,27 @@ async function scrapeRgaaLive(
           scrapedAt,
         },
       });
-    }
+
+      // Documents pour chaque test détecté
+      c.tests.forEach((testRef) => {
+        const testText = `Test RGAA ${testRef} [Thématique : ${c.thematic}] : Ce test est rattaché au critère ${c.reference}.`;
+        documents.push({
+          id: makeScrapedDocumentId("rgaa", `test-${testRef}`, testText),
+          text: testText,
+          collection: "rgaa_referential",
+          metadata: {
+            source: "rgaa",
+            url: `${RGAA_CRITERIA_URL}#${testRef}`,
+            criterion: c.reference,
+            test: testRef,
+            thematic: c.thematic,
+            type: "test",
+            lang: "fr",
+            scrapedAt,
+          } as any,
+        } as any);
+      });
+    });
   } catch (e) {
     errors.push(`critères: ${(e as Error).message}`);
   }

@@ -199,21 +199,24 @@ export function AIChatBox({
       {/* Messages Area */}
       <div ref={scrollAreaRef} className="flex-1 overflow-hidden">
         {displayMessages.length === 0 ? (
-          <div className="flex h-full flex-col p-4">
+          <div className="flex h-full flex-col p-4" id="chat-empty-state">
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-muted-foreground">
               <div className="flex flex-col items-center gap-3">
-                <Sparkles className="size-12 opacity-20" />
-                <p className="text-sm">{emptyStateMessage}</p>
+                <div className="size-16 rounded-full bg-indigo-500/10 flex items-center justify-center animate-pulse">
+                  <Sparkles className="size-8 text-indigo-500/40" />
+                </div>
+                <p className="text-sm font-medium tracking-wide">{emptyStateMessage}</p>
               </div>
 
               {suggestedPrompts && suggestedPrompts.length > 0 && (
-                <div className="flex max-w-2xl flex-wrap justify-center gap-2">
+                <div className="flex max-w-2xl flex-wrap justify-center gap-2" id="chat-suggested-prompts">
                   {suggestedPrompts.map((prompt, index) => (
                     <button
                       key={index}
+                      id={`chat-suggested-${index}`}
                       onClick={() => onSendMessage(prompt)}
                       disabled={isLoading}
-                      className="rounded-lg border border-border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      className="rounded-lg border border-border bg-card px-4 py-2 text-sm transition-all hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {prompt}
                     </button>
@@ -254,10 +257,10 @@ export function AIChatBox({
 
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-2.5",
+                        "max-w-[80%] rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-300",
                         message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground"
+                          ? "btn-premium text-white rounded-tr-none"
+                          : "bg-muted text-foreground rounded-tl-none border border-slate-200 dark:border-slate-800"
                       )}
                     >
                       {message.role === "assistant" ? (
@@ -304,11 +307,13 @@ export function AIChatBox({
 
       {/* Input Area */}
       <form
+        id="chat-input-form"
         ref={inputAreaRef}
         onSubmit={handleSubmit}
-        className="flex gap-2 p-4 border-t bg-background/50 items-end"
+        className="flex gap-2 p-4 border-t bg-slate-50/50 dark:bg-slate-900/50 items-end"
       >
         <Textarea
+          id="chat-input-textarea"
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -318,10 +323,11 @@ export function AIChatBox({
           rows={1}
         />
         <Button
+          id="chat-send-btn"
           type="submit"
           size="icon"
           disabled={!input.trim() || isLoading}
-          className="shrink-0 h-[38px] w-[38px]"
+          className="shrink-0 h-[38px] w-[38px] btn-premium border-none"
         >
           {isLoading ? (
             <Loader2 className="size-4 animate-spin" />

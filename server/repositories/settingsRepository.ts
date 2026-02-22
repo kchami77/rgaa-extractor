@@ -8,7 +8,7 @@ import { hubSettings, type HubSetting, type InsertHubSetting } from "../../drizz
 export const DEFAULT_SETTINGS: Omit<InsertHubSetting, "updatedAt">[] = [
   // LLM
   { key: "llm.provider",    value: "openrouter", type: "select",   category: "llm",    description: "Fournisseur LLM (openrouter | openai | ollama | forge)" },
-  { key: "llm.model",       value: "openai/gpt-oss-120b:free", type: "string", category: "llm", description: "Identifiant du modèle LLM" },
+  { key: "llm.model",       value: "google/gemini-2.0-flash-exp:free", type: "string", category: "llm", description: "Identifiant du modèle LLM" },
   { key: "llm.apiKey",      value: "",           type: "password", category: "llm",    description: "Clé API du fournisseur LLM" },
   { key: "llm.baseUrl",     value: "",           type: "string",   category: "llm",    description: "URL de base de l'API (auto si vide)" },
   { key: "llm.maxTokens",   value: "4096",       type: "number",   category: "llm",    description: "Nombre maximum de tokens en sortie" },

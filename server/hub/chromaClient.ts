@@ -21,7 +21,6 @@ import { settingsService } from "./settingsService";
 export type ChromaCollectionName =
   | "rgaa_referential"
   | "rgaa_findings"
-  | "rgaa_expertise"
   | "rgaa_code";
 
 // ─── Singleton ────────────────────────────────────────────────────────────────
@@ -165,6 +164,5 @@ export async function resetCollection(name: ChromaCollectionName): Promise<void>
 const COLLECTION_METADATA: Record<ChromaCollectionName, string> = {
   rgaa_referential: "Critères RGAA 4.1, thématiques, obligations WCAG 2.2 — vérité immuable officielle",
   rgaa_findings:    "Constats validés des rapports d'audit — expertise capitalisée des auditeurs",
-  rgaa_expertise:   "Templates approuvés, notices AcceDe Web, articles MDN — bonnes pratiques",
   rgaa_code:        "Snippets HTML/ARIA before/after par critère (WAI-ARIA APG) — enrichissement sémantique",
 };

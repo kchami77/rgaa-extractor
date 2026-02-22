@@ -43,13 +43,12 @@ export interface IndexDocumentInput {
 }
 
 // ─── Pondérations par collection ──────────────────────────────────────────────
-async function getWeights(): Promise<Record<ChromaCollectionName, number>> {
+async function getWeights(): Promise<Record<string, number>> {
   return {
     rgaa_referential: await settingsService.getNumber("rag.weightReferential"),
     rgaa_findings:    await settingsService.getNumber("rag.weightFindings"),
-    rgaa_expertise:   await settingsService.getNumber("rag.weightExpertise"),  // FIX: clé dédiée
     rgaa_code:        await settingsService.getNumber("rag.weightCode"),
-  };
+  } as Record<string, number>;
 }
 
 // ─── Scoring ──────────────────────────────────────────────────────────────────
@@ -69,7 +68,7 @@ function computeScore(
 async function searchAllCollections(
   queryEmbedding: number[],
   collections: ChromaCollectionName[],
-  where?: Record<string, string>, // FIX: filtre ChromaDB optionnel transmis
+  where?: Record<string, any>, // Modifié pour accepter plus de filtres
 ): Promise<RagSource[]> {
   const topK = await settingsService.getNumber("rag.topK");
   const minSimilarity = await settingsService.getNumber("rag.minSimilarity");
@@ -87,7 +86,7 @@ async function searchAllCollections(
 
           const score = computeScore(
             r.distance,
-            weights[col],
+            weights[col] ?? 1.0,
             Number(r.metadata.occurrenceCount ?? 1),
             Number(r.metadata.confidenceLevel ?? 50),
           );
@@ -103,7 +102,47 @@ async function searchAllCollections(
   const seen = new Set<string>();
   return allResults
     .sort((a, b) => b.score - a.score)
-    .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; });
+    .filter(r => { 
+      if (seen.has(r.id)) return false; 
+      seen.add(r.id); 
+      return true; 
+    });
+}
+
+/** 
+ * Orchestration intelligente : Détecte les références et croise les sources 
+ */
+async function retrieveEnrichedContext(question: string): Promise<RagSource[]> {
+  const refMatch = question.match(/\b(\d+\.\d+(\.\d+)?)\b/);
+  const criterionRef = refMatch ? refMatch[1] : null;
+  
+  const queryEmbedding = await embed(question);
+  const collections: ChromaCollectionName[] = ["rgaa_referential", "rgaa_findings", "rgaa_code"];
+  
+  // 1. Recherche sémantique globale
+  let results = await searchAllCollections(queryEmbedding, collections);
+
+  // 2. Recherche forcée par métadonnées (si critère détecté)
+  if (criterionRef) {
+    console.log(`[RAG] Détection critère ${criterionRef} -> Recherche forcée`);
+    const exactResults = await searchAllCollections(
+      queryEmbedding, 
+      ["rgaa_referential", "rgaa_findings"], 
+      { criterion: criterionRef }
+    );
+    
+    // Booster les résultats exacts de manière agressive
+    exactResults.forEach(r => r.score += 1.0); // Boost massif
+    
+    // Fusionner sans doublons
+    const existingIds = new Set(results.map(r => r.id));
+    exactResults.forEach(r => {
+      if (!existingIds.has(r.id)) results.push(r);
+    });
+  }
+
+  // Trier par score décroissant et limiter à 12 sources pour plus de contexte
+  return results.sort((a, b) => b.score - a.score).slice(0, 12);
 }
 
 // ─── Construction du prompt enrichi ──────────────────────────────────────────
@@ -118,7 +157,29 @@ function buildRagPrompt(question: string, sources: RagSource[]): string {
     return `--- Source ${i + 1} (${s.collection}, score: ${s.score.toFixed(2)}) ---\n${tag}${s.text}`;
   }).join("\n\n");
 
-  return `CONTEXTE ISSU DE LA BASE DE CONNAISSANCES RGAA :\n${contextBlocks}\n\n---\n\nQuestion : ${question}\n\nRéponds en utilisant le contexte ci-dessus. Cite les sources pertinentes sous forme de numéros [Source N].`;
+  const contextText = contextBlocks; // Alias for clarity in the prompt template
+
+  return `Tu es un Expert certifié en accessibilité numérique (RGAA 4.1.2).
+Ta mission est de répondre avec une précision ABSOLUE aux questions techniques.
+
+RÈGLES CRITIQUES :
+1. UTILISE PRIORITAIREMENT les sources taguées avec le critère exact demandé (ex: si on parle de 7.1, ne cite PAS les règles des tableaux 5.x).
+2. DISTINGUE CLAIREMENT :
+   - [LA RÈLE] : Le texte officiel du critère ou du test RGAA.
+   - [L'EXPERTISE] : Tes propres recommandations basées sur tes connaissances d'expert.
+   - [VOS RAPPORTS] : Les constats réels extraits de la base historique (si présents).
+3. SI TU DÉTECTES UNE INCOHÉRENCE entre tes connaissances globales et les sources fournies, donne toujours raison aux SOURCES du Hub RGAA (Référentiel).
+4. NE CONFONDS JAMAIS les thématiques (ex: Thème 7 = Scripts, Thème 5 = Tableaux).
+5. Cite systématiquement tes sources à la fin de ta réponse.
+
+CONTEXTE DU HUB RGAA (SOURCES) :
+${contextText}
+
+---
+
+Question : ${question}
+
+Réponse :`;
 }
 
 // ─── API publique — Fonctions principales ─────────────────────────────────────
@@ -134,11 +195,10 @@ export async function askAccessibility(
   const citeSources = await settingsService.getBool("rag.citeSources");
 
   let sources: RagSource[] = [];
-  const collections: ChromaCollectionName[] = ["rgaa_referential", "rgaa_findings", "rgaa_expertise", "rgaa_code"];
+  const collections: ChromaCollectionName[] = ["rgaa_referential", "rgaa_findings", "rgaa_code"];
 
   if (chromaOk) {
-    const queryEmbedding = await embed(context ? `${question} ${context}` : question);
-    sources = await searchAllCollections(queryEmbedding, collections);
+    sources = await retrieveEnrichedContext(context ? `${question} ${context}` : question);
   }
 
   const systemPrompt = await buildHubSystemPrompt();
@@ -202,7 +262,7 @@ export async function suggestFix(
 ): Promise<RagResponse> {
   const chromaOk = await isChromaAvailable();
   let sources: RagSource[] = [];
-  const collections: ChromaCollectionName[] = ["rgaa_code", "rgaa_expertise", "rgaa_findings"];
+  const collections: ChromaCollectionName[] = ["rgaa_code", "rgaa_findings"];
 
   if (chromaOk) {
     const queryText = criterionRef ? `${problem} critère ${criterionRef}` : problem;

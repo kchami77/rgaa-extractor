@@ -16,16 +16,14 @@
  *   - mcp.ts (outil trigger_reindex)
  */
 
-import { isChromaAvailable, getOrCreateCollection } from "./chromaClient";
+import { isChromaAvailable, getOrCreateCollection, resetCollection } from "./chromaClient";
 import type { ChromaCollectionName } from "./chromaClient";
 import { embedBatch } from "./embeddings";
 import type { ScraperSource, ScraperRunResult, ScraperStatus, ScrapeResult, ScrapedDocument } from "./scrapers/types";
 import { QUALITY_GATES } from "./scrapers/types";
 import { scrapeRgaa } from "./scrapers/rgaaScraper";
-import { scrapeWcag } from "./scrapers/wcagScraper";
 import { scrapeWaiAria } from "./scrapers/waiAriaScraper";
-import { scrapeAccedeWeb } from "./scrapers/accedeWebScraper";
-import { scrapeMdn } from "./scrapers/mdnScraper";
+import { scrapeReports } from "./scrapers/reportsScraper";
 
 // ─── Statut global (thread-safe pour Node.js single-threaded) ────────────────
 
@@ -57,7 +55,6 @@ export async function shouldReindex(_source: ScraperSource = "all"): Promise<boo
 
   const collections = [
     "rgaa_referential",
-    "rgaa_expertise",
     "rgaa_code",
   ] as const;
 
@@ -148,18 +145,14 @@ type AdapterFn = () => Promise<{
 
 const ADAPTERS: Record<Exclude<ScraperSource, "all">, AdapterFn> = {
   rgaa:       scrapeRgaa,
-  wcag:       scrapeWcag,
   "wai-aria": scrapeWaiAria,
-  accede:     scrapeAccedeWeb,
-  mdn:        scrapeMdn,
+  reports:    scrapeReports,
 };
 
 const SOURCE_ORDER: Exclude<ScraperSource, "all">[] = [
   "rgaa",        // Priorité 1 — référentiel cœur
-  "wcag",        // Priorité 2 — techniques W3C
-  "accede",      // Priorité 3 — expertise FR
-  "mdn",         // Priorité 4 — guides techniques
-  "wai-aria",    // Priorité 5 — patterns (playwright, plus lent)
+  "reports",     // Priorité 2 — données historiques (MySQL)
+  "wai-aria",    // Priorité 3 — patterns (playwright, plus lent)
 ];
 
 // ─── Point d'entrée principal ─────────────────────────────────────────────────
@@ -172,6 +165,7 @@ const SOURCE_ORDER: Exclude<ScraperSource, "all">[] = [
  */
 export async function scrapeAndIndex(
   source: ScraperSource = "all",
+  reset: boolean = false,
 ): Promise<ScraperRunResult> {
   if (_status.phase === "running") {
     throw new Error("[Scraper] Un scraping est déjà en cours");
@@ -197,59 +191,56 @@ export async function scrapeAndIndex(
   console.log(`[Hub] Démarrage scraping : [${sourcesToRun.join(", ")}]`);
 
   try {
-    for (let i = 0; i < sourcesToRun.length; i++) {
-      const src = sourcesToRun[i];
-      _status.currentSource = src;
-      // Progression : scraping = 0→80%, indexation = 80→90% par source
-      const baseProgress = Math.round((i / sourcesToRun.length) * 80);
-      _status.progress = baseProgress;
+    // Exécution parallélisée des scrapers
+    const promises = sourcesToRun.map(async (src) => {
+      // Reset de la collection si demandé
+      if (reset) {
+        const colMap: Record<Exclude<ScraperSource, "all">, ChromaCollectionName[]> = {
+          rgaa: ["rgaa_referential"],
+          reports: ["rgaa_findings"],
+          "wai-aria": ["rgaa_code"]
+        };
+        const cols = colMap[src] || [];
+        for (const col of cols) {
+          console.log(`[Hub] Reset collection ${col} before ${src}...`);
+          await resetCollection(col);
+        }
+      }
 
-      console.log(`[Hub] [${i + 1}/${sourcesToRun.length}] Scraping ${src}...`);
-
-      // Vérifier les Quality Gates
-      const minDocs = QUALITY_GATES[src] ?? 0;
+      console.log(`[Hub] Scraping ${src} (Asynchrone)...`);
 
       try {
         const adapter = ADAPTERS[src];
         if (!adapter) {
-          results.push({ source: src, success: false, count: 0, errors: [`Source inconnue: ${src}`], durationMs: 0 });
-          continue;
+          return { source: src, success: false, count: 0, errors: [`Source inconnue: ${src}`], durationMs: 0 };
         }
 
-        const { documents, result, usedFallback } = await adapter();
-
-        if (usedFallback) hadFallback = true;
-
-        // Log quality gate
-        if (result.count < minDocs) {
-          console.warn(
-            `[Hub] Quality Gate ${src}: ${result.count}/${minDocs} docs — indexation partielle`,
-          );
-        }
+        const { documents, result, usedFallback: fallbackUsed } = await adapter();
+        if (fallbackUsed) hadFallback = true;
 
         // Indexer dans ChromaDB
         if (documents.length > 0) {
           const indexedCount = await indexDocuments(documents);
           totalIndexed += indexedCount;
-          results.push({ ...result, count: indexedCount });
-          console.log(`[Hub] ${src}: ${indexedCount} documents indexés`);
+          return { ...result, count: indexedCount };
         } else {
-          results.push(result);
-          console.warn(`[Hub] ${src}: 0 documents produits`);
+          return result;
         }
       } catch (e) {
         const msg = (e as Error).message;
-        console.error(`[Hub] Erreur irrécupérable pour ${src}:`, msg);
-        results.push({
+        console.error(`[Hub] Erreur pour ${src}:`, msg);
+        return {
           source: src,
           success: false,
           count: 0,
           errors: [msg],
           durationMs: 0,
-        });
-        // Continuer avec les autres sources
+        };
       }
-    }
+    });
+
+    const settledResults = await Promise.all(promises);
+    results.push(...settledResults);
 
     const completedAt = new Date().toISOString();
 

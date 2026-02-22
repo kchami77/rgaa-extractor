@@ -19,7 +19,7 @@ export interface ScrapedDocument {
 
   metadata: {
     /** Identifiant de la source. */
-    source: "rgaa" | "wcag" | "wai-aria" | "accede" | "mdn";
+    source: "rgaa" | "wai-aria" | "reports";
 
     /** URL de la page source (pour citation). */
     url?: string;
@@ -31,7 +31,7 @@ export interface ScrapedDocument {
     thematic?: string;
 
     /** Sous-type de document dans la source. */
-    type: "criterion" | "technique" | "pattern" | "notice" | "guide" | "glossary";
+    type: "criterion" | "test" | "technique" | "pattern" | "notice" | "guide" | "glossary";
 
     /** Langue du document. */
     lang: "fr" | "en";
@@ -53,7 +53,7 @@ export interface ScrapeResult {
 
 // ─── Sources disponibles ────────────────────────────────────────────────────
 
-export const SCRAPER_SOURCES = ["rgaa", "wcag", "wai-aria", "accede", "mdn", "all"] as const;
+export const SCRAPER_SOURCES = ["rgaa", "wai-aria", "reports", "all"] as const;
 export type ScraperSource = (typeof SCRAPER_SOURCES)[number];
 export const ScraperSourceSchema = z.enum(SCRAPER_SOURCES);
 
@@ -85,18 +85,16 @@ export interface ScraperRunResult {
 
 export const QUALITY_GATES: Record<string, number> = {
   rgaa:      80,   // Minimum 80 critères RGAA
-  wcag:      50,   // Minimum 50 techniques WCAG
   "wai-aria": 20,  // Minimum 20 patterns APG
-  accede:    10,   // Minimum 10 notices AcceDe
-  mdn:       20,   // Minimum 20 articles MDN
 };
 
 // ─── Utilitaires ─────────────────────────────────────────────────────────────
 
 /** Génère un ID stable SHA-256 pour un document de scraping. */
 export function makeScrapedDocumentId(source: string, key: string, text: string): string {
+  // S13-1 FIX : Utilisation du texte complet pour le hash pour éviter les collisions sur les longs documents
   return createHash("sha256")
-    .update(`${source}|${key}|${text.slice(0, 256)}`)
+    .update(`${source}|${key}|${text}`)
     .digest("hex");
 }
 

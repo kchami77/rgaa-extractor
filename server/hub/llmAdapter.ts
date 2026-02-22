@@ -120,7 +120,14 @@ export async function invokeHubLLM(params: InvokeHubParams): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`[Hub/LLM] ${provider}/${model} HTTP ${response.status}: ${errorText}`);
+    let friendlyMessage = `[Hub/LLM] ${provider}/${model} HTTP ${response.status}: ${errorText}`;
+
+    // S12-2 FIX : Détection spécifique de l'erreur de politique de données OpenRouter
+    if (provider === "openrouter" && errorText.includes("data policy")) {
+      friendlyMessage = `[Hub/LLM] Erreur de politique OpenRouter. Les modèles gratuits exigent d'activer le partage de données dans vos réglages : https://openrouter.ai/settings/privacy (activez "Free model publication").`;
+    }
+
+    throw new Error(friendlyMessage);
   }
 
   const result = await response.json() as {

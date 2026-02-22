@@ -32,6 +32,10 @@ import { Link } from "wouter";
 
 export default function Options() {
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    document.title = "Options Hub | Perfection RAG";
+  }, []);
   
   // ─── tRPC Queries ──────────────────────────────────────────────────────────
   
@@ -74,7 +78,7 @@ export default function Options() {
   // ─── Handlers ──────────────────────────────────────────────────────────────
   
   const handleReindex = (source: string = "all") => {
-    triggerReindex.mutate({ source: source as any });
+    triggerReindex.mutate({ source: source as any, reset: true });
   };
 
   const handleUpdate = (key: string, value: string) => {
@@ -116,13 +120,18 @@ export default function Options() {
               Configurez le moteur RAG et gérez l'indexation des référentiels d'accessibilité.
             </p>
           </div>
-          <Button variant="outline" onClick={() => resetToDefaults.mutate()} disabled={resetToDefaults.isPending}>
+          <Button 
+            id="hub-reset-defaults-btn"
+            variant="outline" 
+            onClick={() => resetToDefaults.mutate()} 
+            disabled={resetToDefaults.isPending}
+          >
             Défauts usine
           </Button>
         </div>
 
         {/* 1. Monitoring & Scraping */}
-        <Card className="border-primary/10 shadow-sm overflow-hidden">
+        <Card id="hub-monitoring-card" className="border-none glass-card overflow-hidden">
           <div className="absolute top-0 right-0 p-4">
             <RefreshCw 
               className={`h-4 w-4 text-slate-400 cursor-pointer ${status?.phase === 'running' ? 'animate-spin' : ''}`} 
@@ -142,9 +151,10 @@ export default function Options() {
                 </CardDescription>
               </div>
               <Button 
+                id="hub-reindex-all-btn"
                 onClick={() => handleReindex()} 
                 disabled={status?.phase === "running"}
-                className="gap-2"
+                className="gap-2 btn-premium border-none"
               >
                 <RefreshCw className="h-4 w-4" />
                 Tout ré-indexer
@@ -167,13 +177,6 @@ export default function Options() {
                 <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">RGAA 4.1.2</span>
                 <div className="flex items-center justify-between">
                    <span className="text-sm">106 critères</span>
-                   <CheckCircle2 className="h-4 w-4 text-green-500" />
-                </div>
-              </div>
-              <div className="p-3 border rounded-lg bg-white dark:bg-slate-900 flex flex-col gap-1">
-                <span className="text-xs text-slate-500 uppercase font-bold tracking-wider">WCAG 2.2</span>
-                <div className="flex items-center justify-between">
-                   <span className="text-sm">~200 techniques</span>
                    <CheckCircle2 className="h-4 w-4 text-green-500" />
                 </div>
               </div>
@@ -231,10 +234,10 @@ export default function Options() {
                       {s.type !== 'boolean' && (
                         <div className="flex gap-2">
                           <Input 
-                            id={s.key}
+                            id={`setting-input-${s.key}`}
                             type={s.type === 'password' ? 'password' : 'text'}
                             defaultValue={s.value}
-                            className="text-xs h-9"
+                            className="text-xs h-9 bg-white/50 dark:bg-black/20 border-slate-200/50"
                             onBlur={(e) => {
                               if (e.target.value !== s.value) {
                                 handleUpdate(s.key, e.target.value);

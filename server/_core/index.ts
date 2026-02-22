@@ -37,10 +37,11 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Initialiser le référentiel RGAA (thématiques + critères) au démarrage
+  console.log("[Server] Initialisation du référentiel RGAA...");
   await initializeRgaaReferential();
+  console.log("[Server] Référentiel initialisé.");
 
-  // Bootstrap du Hub : auto-scrape si les collections sont vides
+  console.log("[Server] Vérification de l'état du Hub...");
   try {
     if (await shouldReindex("all")) {
       console.log("[Hub] Collections vides détectées — Lancement de l'indexation initiale...");
@@ -48,6 +49,8 @@ async function startServer() {
       scrapeAndIndex("all").catch(err => {
         console.error("[Hub] Échec de l'indexation initiale:", err.message);
       });
+    } else {
+      console.log("[Hub] Indexation existante détectée.");
     }
   } catch (err) {
     console.warn("[Hub] Impossible de vérifier l'état des collections (ChromaDB KO ?)");
@@ -140,7 +143,9 @@ async function startServer() {
   );
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
+    console.log("[Server] Configuration de Vite...");
     await setupVite(app, server);
+    console.log("[Server] Vite configuré.");
   } else {
     serveStatic(app);
   }

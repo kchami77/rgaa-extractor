@@ -92,27 +92,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     // ── Outils existants (v1.0) ──────────────────────────────────────────────
     {
-      name: "search_rgaa_expertise",
-      description: "Rechercher des solutions et modèles de constats dans la bibliothèque (SQL + vectoriel si disponible). Retourne les templates approuvés correspondants.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          q: { type: "string", description: "Terme de recherche (ex: 'carousel', 'iframe', 'formulaire')" },
-        },
-      },
-    },
-    {
-      name: "get_expertise_by_criterion",
-      description: "Récupérer tous les modèles de constats validés pour un critère RGAA spécifique.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          criterionReference: { type: "string", description: "Référence du critère (ex: '1.1', '8.3')" },
-        },
-        required: ["criterionReference"],
-      },
-    },
-    {
       name: "get_report_findings",
       description: "Récupérer les constats d'un rapport d'audit spécifique.",
       inputSchema: {
@@ -133,22 +112,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
       },
     },
-    {
-      name: "propose_deduplication",
-      description: "Analyser un constat pour trouver des modèles sémantiquement similaires (Levenshtein + vectoriel).",
-      inputSchema: {
-        type: "object",
-        properties: {
-          findingText: { type: "string" },
-          criterionReference: { type: "string" },
-        },
-        required: ["findingText", "criterionReference"],
-      },
-    },
     // ── Nouveaux outils Hub (v2.0) ───────────────────────────────────────────
     {
       name: "ask_accessibility",
-      description: "Poser une question en langage naturel sur l'accessibilité RGAA/WCAG. Le Hub répond en utilisant sa base de connaissances (référentiel + constats + expertise). Retourne une réponse experte avec sources citées.",
+      description: "Poser une question en langage naturel sur l'accessibilité RGAA/WCAG. Le Hub répond en utilisant sa base de connaissances (référentiel + constats). Retourne une réponse experte avec sources citées.",
       inputSchema: {
         type: "object",
         properties: {
@@ -208,17 +175,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     // ── Outils v1.0 (conservés) ───────────────────────────────────────────────
 
-    if (name === "search_rgaa_expertise") {
-      const q = args?.q as string;
-      const templates = await caller.findingTemplates.search({ q, status: "approved" });
-      return { content: [{ type: "text", text: JSON.stringify(templates, null, 2) }] };
-    }
-
-    if (name === "get_expertise_by_criterion") {
-      const ref = args?.criterionReference as string;
-      const templates = await caller.findingTemplates.getByCriterion({ criterionReference: ref });
-      return { content: [{ type: "text", text: JSON.stringify(templates, null, 2) }] };
-    }
 
     if (name === "get_report_findings") {
       const findings = await caller.audit.getEnrichedFindings({ reportId: args?.reportId as number });
@@ -230,21 +186,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       return { content: [{ type: "text", text: JSON.stringify(findings, null, 2) }] };
     }
 
-    if (name === "propose_deduplication") {
-      const { findingText, criterionReference } = args as any;
-      const templates = await caller.findingTemplates.getByCriterion({ criterionReference });
-      const suggestions = templates
-        .map(t => ({
-          templateId: t.id,
-          finding: t.finding,
-          similarity: calculateSimilarity(findingText, t.finding),
-          status: t.status,
-        }))
-        .filter(s => s.similarity > 0.6)
-        .sort((a, b) => b.similarity - a.similarity);
-
-      return { content: [{ type: "text", text: JSON.stringify(suggestions, null, 2) }] };
-    }
 
     // ── Nouveaux outils Hub v2.0 ──────────────────────────────────────────────
 

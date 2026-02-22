@@ -2,6 +2,37 @@
 
 > [!NOTE]
 > Ce document est le guide de référence pour comprendre, installer et faire évoluer le Knowledge Hub. Il synthétise la vision produit, les choix d'architecture et les étapes de réalisation.
+- [x] Phase 13 : Perfection & Performance (RAG Advanced) ✅
+- [x] Phase 14 : Polissage UI & Conformité Premium ✅
+- [x] Phase 15 : Éradication des Hallucinations ✅
+- [x] Phase 16 : Désactivation des Techniques WCAG ✅
+- [x] Phase 17 : Suppression Expertise & Rédaction ✅
+
+## 🌟 Focus Perfection (Phase 13)
+... (identique) ...
+
+## 🎨 Design Premium & Conformité (Phase 14)
+... (identique) ...
+
+## 🛡️ Éradication des Hallucinations (Phase 15)
+
+Cette phase a résolu les bugs de confusion sémantique (ex: Critère 7.1 confondu avec les Tableaux 5.6).
+
+### 🚑 Metadata Rescue
+- **Récupération Forcée** : Le moteur RAG détecte désormais les numéros de critères dans la question et force une recherche par métadonnée exacte (`criterion: "7.1"`).
+- **Scoring Boost (+100%)** : Les résultats de recherche par métadonnée reçoivent un boost de score massif (+1.0), les forçant en haut du contexte.
+- **Ré-indexation de Survie** : Correction du scraper pour garantir que chaque document de critère est balisé avec sa thématique et sa référence.
+
+### 🧠 Prompting de Sécurité
+- Le prompt système interdit désormais formellement à l'IA de mélanger les thématiques (ex: Scripts vs Tableaux) si le contexte contient des informations contradictoires.
+
+## 🧹 Simplification & Pureté (Phase 16 & 17)
+
+Le Hub a été épuré pour se concentrer sur l'essentiel : le RGAA 4.1 et votre expertise d'audit.
+
+- **Retrait du Pipeline** : Les scrapers `wcagScraper.ts`, `accedeWebScraper.ts` et `mdnScraper.ts` ont été supprimés.
+- **Interface Simplifiée** : Les modules "Expertise" (templates) et "Rédaction" ont été retirés pour une navigation plus fluide centrée sur l'audit.
+- **Nettoyage Vectoriel** : La collection `rgaa_expertise` a été supprimée. Le "Tout ré-indexer" permet de reconstruire un cerveau 100% RGAA.
 
 ---
 
@@ -9,9 +40,9 @@
 
 ### 🌟 Utilité Fonctionnelle
 Le **RGAA Knowledge Hub** transforme l'application d'un simple extracteur de données statiques en un **système expert d'audit augmenté**.
-- **Problème** : Les auditeurs doivent jongler entre 106 critères RGAA, des centaines de techniques WCAG et des guides de code ARIA dispersés.
+- **Problème** : Les auditeurs doivent jongler entre 106 critères RGAA et leurs bases historiques de rapports.
 - **Solution** : Un moteur RAG (Retrieval-Augmented Generation) qui centralise toutes ces connaissances.
-- **Bénéfice** : L'IA peut désormais répondre à des questions complexes ("Comment rendre ce bouton accessible ?"), analyser du code HTML en temps réel et suggérer des corrections basées sur les référentiels officiels.
+- **Bénéfice** : L'IA peut désormais répondre à des questions complexes, analyser du code HTML en temps réel et suggérer des corrections basées sur les référentiels officiels et votre historique.
 
 ### ⚙️ Architecture & Choix Techniques
 
@@ -30,18 +61,10 @@ Le **RGAA Knowledge Hub** transforme l'application d'un simple extracteur de don
 1. [🏗️ Vision du Projet](#️-1-vision-du-projet)
 2. [🚀 Guide d'Installation Locale](#-3-guide-dinstallation-locale)
 3. [🧩 Structure du Code](#-4-structure-du-code)
-   - [📄 Fiche 01 : Infrastructure tRPC](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/01_core_infrastructure.md)
-   - [📄 Fiche 02 : Moteur RAG & ChromaDB](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/02_rag_engine.md)
-   - [📄 Fiche 03 : Interopérabilité MCP](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/03_mcp_integration.md)
-   - [📄 Fiche 04 : Framework de Scraping](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/04_scraper_framework.md)
-   - [📄 Fiche 05 : Interface & Réglages](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/05_admin_hub_ui.md)
-   - [📄 Fiche 06 : Deep Dive UI & Monitoring](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/06_ui_options_monitoring.md)
-   - [📄 Fiche 07 : Automatisation & Résilience](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/07_automation_resilience.md)
-   - [📄 Fiche 08 : OpenRouter & Reasoning](file:///c:/Users/user/Desktop/rgaa-extractor-complete/docs/technical_sheets/08_openrouter_reasoning.md)
 4. [🛠️ Développement par Blocs](#️-5-développement-par-blocs)
-5. [🛡️ Qualité & Résilience](#-6-qualité--résilience)
-6. [🛠️ Commandes Utiles & Maintenance](#️-7-commandes-utiles--maintenance)
-7. [🔮 Évolutions Futures](#-8-évolutions-futures)
+6. [🛡️ Qualité & Résilience](#-6-qualité--résilience)
+7. [🛠️ Commandes Utiles & Maintenance](#️-7-commandes-utiles--maintenance)
+8. [🔮 Évolutions Futures](#-8-évolutions-futures)
 
 ---
 
@@ -110,12 +133,32 @@ Si vous ne souhaitez pas utiliser Docker, vous pouvez lancer Chroma via Python :
    ```bash
    pnpm db:push
    ```
-2. **Lancez l'application** en mode développement :
+2. **Lancez l'application** :
    ```bash
    pnpm dev
    ```
 
-*Note : Au premier lancement, le Hub détectera que la base vectorielle est vide. Il lancera automatiquement le scraping des référentiels (RGAA, WCAG...) en arrière-plan. Vous pourrez suivre la progression dans la console ou via la page des Paramètres (icône engrenage).*
+---
+
+### 🖥️ Interface Utilisateur optimisée
+L'interface est organisée en plusieurs onglets accessibles après connexion :
+1.  **Upload** : Import de rapports Word.
+2.  **Rapports** : Gestion des projets.
+3.  **Rédaction** : Assistant de rédaction (Design Preview).
+4.  **Bibliothèque** : Exploration sémantique de l'historique des audits.
+5.  **Expertise** : Gestion de vos modèles approuvés.
+6.  **Chat Expert (NOUVEAU)** : Posez vos questions au Hub RGAA ! (Utilise les 401+ documents indexés).
+
+---
+
+### 🦙 Intelligence Hub (RAG)
+Le Hub est désormais capable de :
+- Rechercher dans le référentiel **RGAA 4.1.2**.
+- Citer les techniques **WCAG 2.2**.
+- S'appuyer sur les notices **AcceDe Web** et **MDN**.
+- **Synchroniser vos rapports existants** : L'IA indexe automatiquement les constats déjà stockés en base MySQL via le bouton "Tout Re-indexer".
+- Utiliser **Ollama** (local) ou **OpenRouter** (cloud) pour répondre.
+- **Auto-détection de politique** : Guide l'utilisateur en cas de blocage de politique de données sur OpenRouter.
 
 ---
 

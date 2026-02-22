@@ -40,6 +40,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Brand Gradients & Premium Tokens */
+  --brand-gradient: linear-gradient(135deg, oklch(0.623 0.214 259.815) 0%, oklch(0.488 0.243 264.376) 100%);
+  --brand-gradient-hover: linear-gradient(135deg, oklch(0.68 0.2 260) 0%, oklch(0.55 0.22 265) 100%);
+  --glass-bg: oklch(1 0 0 / 70%);
+  --glass-border: oklch(1 0 0 / 20%);
 }
 
 :root {
@@ -119,7 +125,18 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+  
+  /* Premium Heading Styles */
+  h1, h2, h3 {
+    @apply tracking-tight font-bold;
+    background: linear-gradient(to bottom right, var(--foreground), oklch(0.4 0.015 65));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -134,6 +151,22 @@
 }
 
 @layer components {
+  .glass-card {
+    @apply backdrop-blur-xl border border-white/20 shadow-xl;
+    background: var(--glass-bg);
+  }
+
+  .dark .glass-card {
+    background: oklch(0.21 0.006 285.885 / 70%);
+    border-color: oklch(1 0 0 / 10%);
+  }
+
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-300 hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:-translate-y-0.5 active:translate-y-0;
+    background: var(--brand-gradient);
+    color: white;
+  }
+
   /**
    * Custom container utility that centers content and adds responsive padding.
    *
