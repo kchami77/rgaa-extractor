@@ -1,6 +1,6 @@
-import { eq, and, inArray, or, sql } from "drizzle-orm";
-import { findings, auditReports, rgaaCriteria } from "../../drizzle/schema";
+import { findings, auditReports, rgaaCriteria, findingTemplates } from "../../drizzle/schema";
 import { getDb } from "./connection";
+import { searchSimilarFindingsInChroma } from "../hub/ragEngine";
 
 /**
  * Crée un nouveau constat
@@ -123,6 +123,7 @@ export async function getEnrichedFindings(filters: {
   thematicNumber?: number;
   impact?: "Bloquant" | "Majeur" | "Mineur";
   criterionReference?: string;
+  q?: string; // Nouvelle recherche textuelle
 }) {
   const db = await getDb();
   if (!db) return [];
@@ -148,6 +149,39 @@ export async function getEnrichedFindings(filters: {
   }
   if (filters.criterionReference) {
     conditions.push(eq(findings.criterionReference, filters.criterionReference));
+  }
+
+  // RECHERCHE SÉMANTIQUE (Phase 18)
+  if (filters.q?.trim()) {
+    try {
+      const vectorResults = await searchSimilarFindingsInChroma(filters.q, 50);
+
+      if (vectorResults.length > 0) {
+        // Extraire les hashes des IDs (finding-xxxxx ou validated-xxxxx)
+        const hashes = vectorResults.map((r: { id: string }) => r.id.replace(/^(finding|validated)-/, ""));
+
+        // Trouver les templateIds correspondants aux hashes
+        const templateRows = await db
+          .select({ id: findingTemplates.id })
+          .from(findingTemplates)
+          .where(inArray(findingTemplates.signatureHash, hashes));
+
+        const templateIds = templateRows.map(t => t.id);
+
+        if (templateIds.length > 0) {
+          conditions.push(inArray(findings.templateId, templateIds));
+        } else {
+          // Fallback lexical si aucun template ne correspond (cas rare)
+          conditions.push(sql`${findings.finding} LIKE ${`%${filters.q}%`}`);
+        }
+      } else {
+        // Fallback lexical si ChromaDB ne retourne rien
+        conditions.push(sql`${findings.finding} LIKE ${`%${filters.q}%`}`);
+      }
+    } catch (e) {
+      console.warn("[Hub] Recherche sémantique dégradée en lexical:", (e as Error).message);
+      conditions.push(sql`${findings.finding} LIKE ${`%${filters.q}%`}`);
+    }
   }
 
   const query = db

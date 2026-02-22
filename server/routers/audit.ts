@@ -104,6 +104,7 @@ export const auditRouter = router({
         thematicNumber: z.number().optional(),
         criterionReference: z.string().optional(),
         impact: z.enum(["Bloquant", "Majeur", "Mineur"]).optional(),
+        q: z.string().optional(),
       })
     )
     .query(async ({ input }) => {

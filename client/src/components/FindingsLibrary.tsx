@@ -23,12 +23,18 @@ export default function FindingsLibrary() {
   const [selectedImpact, setSelectedImpact] = useState<string>("all");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSmartSearch, setIsSmartSearch] = useState(false);
 
   const { data: findings, isLoading } = trpc.audit.getEnrichedFindings.useQuery({
     reportIds: selectedReportIds.map(id => parseInt(id)),
     pageNames: selectedPageNames.length > 0 ? selectedPageNames : undefined,
     thematicNumber: selectedThematic !== "all" ? parseInt(selectedThematic) : undefined,
     impact: selectedImpact !== "all" ? (selectedImpact as any) : undefined,
+    q: isSmartSearch && searchQuery.trim().length > 2 ? searchQuery : undefined,
+  }, {
+    // Re-fetch only when smart search is active and query changes, 
+    // or when filters change.
+    keepPreviousData: true
   });
 
   const { data: reports } = trpc.audit.getUserReports.useQuery();
@@ -40,6 +46,9 @@ export default function FindingsLibrary() {
   // Client-side text search filtering
   const filteredFindings = useMemo(() => {
     if (!findings) return [];
+    // En mode recherche intelligente, on fait confiance au backend pour le filtrage textuel
+    if (isSmartSearch && searchQuery.trim().length > 2) return findings;
+    
     if (!searchQuery.trim()) return findings;
 
     const queryWords = stripAccents(searchQuery.trim()).split(/\s+/).filter(Boolean);
@@ -59,7 +68,7 @@ export default function FindingsLibrary() {
       // All words must appear somewhere in the text
       return queryWords.every(word => haystack.includes(word));
     });
-  }, [findings, searchQuery, stripAccents]);
+  }, [findings, searchQuery, stripAccents, isSmartSearch]);
 
   // Extract unique pages from findings' location field
   const availablePages = useMemo(() => {
@@ -301,14 +310,25 @@ export default function FindingsLibrary() {
               </button>
             )}
           </div>
-          {searchQuery.trim() && (
-            <div className="mb-4 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{filteredFindings.length}</span> résultat{filteredFindings.length !== 1 ? 's' : ''} trouvé{filteredFindings.length !== 1 ? 's' : ''}
-              {findings && filteredFindings.length < findings.length && (
-                <span> sur {findings.length} constats</span>
-              )}
+
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${!isSmartSearch ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`} onClick={() => setIsSmartSearch(false)}>
+                Recherche Classique
+              </div>
+              <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${isSmartSearch ? 'bg-purple-100 text-purple-700 border border-purple-200 animate-pulse-subtle' : 'bg-slate-100 text-slate-600 border border-slate-200'}`} onClick={() => setIsSmartSearch(true)}>
+                <Search className="w-3 h-3" />
+                Smart Search (IA)
+              </div>
             </div>
-          )}
+
+            {searchQuery.trim() && (
+              <div className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{filteredFindings.length}</span> résultat{filteredFindings.length !== 1 ? 's' : ''} trouvé{filteredFindings.length !== 1 ? 's' : ''}
+                {isSmartSearch && <span className="ml-1 text-purple-600 font-medium">(via ChromaDB)</span>}
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Report filter */}
             <div>

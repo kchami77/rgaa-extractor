@@ -46,6 +46,16 @@
   --brand-gradient-hover: linear-gradient(135deg, oklch(0.68 0.2 260) 0%, oklch(0.55 0.22 265) 100%);
   --glass-bg: oklch(1 0 0 / 70%);
   --glass-border: oklch(1 0 0 / 20%);
+  
+  /* Animations */
+  @keyframes pulse-subtle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.85; transform: scale(0.98); }
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 :root {

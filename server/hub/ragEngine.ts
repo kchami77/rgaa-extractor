@@ -330,6 +330,7 @@ export const ragEngine = {
   askAccessibility,
   analyzeCode,
   suggestFix,
+  searchSimilarFindingsInChroma,
   indexDocument,
   indexDocumentBatch,
 };
