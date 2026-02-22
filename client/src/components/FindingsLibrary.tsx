@@ -135,6 +135,8 @@ export default function FindingsLibrary() {
     if (!filteredFindings.length) return [];
     const map = new Map<number, { name: string; siteUrl: string | null; auditedPages: any[]; findings: typeof filteredFindings }>();
     filteredFindings.forEach(f => {
+      const reportId = f.reportId;
+      if (!map.has(reportId)) {
         const reportData = (reports || []).find(r => r.id === reportId);
         let pages: any[] = [];
         try {
@@ -146,6 +148,7 @@ export default function FindingsLibrary() {
           auditedPages: pages,
           findings: [],
         });
+      }
       map.get(reportId)!.findings.push(f);
     });
     return Array.from(map.entries());
