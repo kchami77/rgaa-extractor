@@ -43,14 +43,24 @@ async function startServer() {
 
   console.log("[Server] Vérification de l'état du Hub...");
   try {
-    if (await shouldReindex("all")) {
-      console.log("[Hub] Collections vides détectées — Lancement de l'indexation initiale...");
-      // Lancement en arrière-plan pour ne pas bloquer le démarrage du serveur
-      scrapeAndIndex("all").catch(err => {
-        console.error("[Hub] Échec de l'indexation initiale:", err.message);
-      });
+    const { settingsService } = await import("../hub/settingsService");
+    const autoIndex = await settingsService.getBool("hub.autoIndexAtStartup");
+
+    if (autoIndex) {
+      const sourcesToReindex = await shouldReindex("all");
+      if (sourcesToReindex.length > 0) {
+        console.log(`[Hub] Sources manquantes détectées : [${sourcesToReindex.join(", ")}] — Lancement de l'indexation...`);
+        // Lancement sélectif
+        for (const src of sourcesToReindex) {
+          scrapeAndIndex(src).catch(err => {
+            console.error(`[Hub] Échec de l'indexation de ${src}:`, err.message);
+          });
+        }
+      } else {
+        console.log("[Hub] Indexation existante détectée (tout est OK).");
+      }
     } else {
-      console.log("[Hub] Indexation existante détectée.");
+      console.log("[Hub] Auto-indexation désactivée (réglage hub.autoIndexAtStartup=false).");
     }
   } catch (err) {
     console.warn("[Hub] Impossible de vérifier l'état des collections (ChromaDB KO ?)");

@@ -46,34 +46,48 @@ export function isScraping(): boolean {
 // ─── Vérification de nécessité de re-indexation ──────────────────────────────
 
 /**
- * Retourne true si la source doit être ré-indexée :
- * - La collection ChromaDB cible est vide (0 docs)
- * - Ou le dernier scraping date de plus de 30 jours (basé sur metadata.scrapedAt)
+ * Retourne la liste des sources qui doivent être ré-indexées :
+ * - Si la collection ChromaDB cible est vide (0 docs)
  */
-export async function shouldReindex(_source: ScraperSource = "all"): Promise<boolean> {
-  if (!(await isChromaAvailable())) return false; // Pas de ChromaDB = pas de scraping utile
+export async function shouldReindex(source: ScraperSource = "all"): Promise<ScraperSource[]> {
+  if (!(await isChromaAvailable())) return [];
 
-  const collections = [
-    "rgaa_referential",
-    "rgaa_code",
-  ] as const;
+  const needed: ScraperSource[] = [];
 
-  for (const colName of collections) {
-    try {
-      const col = await getOrCreateCollection(colName);
-      const count = await col.count();
-      if (count === 0) {
-        console.log(`[Hub] Collection ${colName} vide → re-indexation recommandée`);
-        return true;
+  const mapping: Record<Exclude<ScraperSource, "all">, ChromaCollectionName[]> = {
+    rgaa: ["rgaa_referential"],
+    reports: ["rgaa_findings"],
+    "wai-aria": ["rgaa_code"]
+  };
+
+  const sourcesToCheck: Exclude<ScraperSource, "all">[] =
+    source === "all" ? SOURCE_ORDER : [source as Exclude<ScraperSource, "all">];
+
+  for (const src of sourcesToCheck) {
+    const cols = mapping[src] || [];
+    let isEmpty = false;
+
+    for (const colName of cols) {
+      try {
+        const col = await getOrCreateCollection(colName);
+        const count = await col.count();
+        if (count === 0) {
+          console.log(`[Hub] Source ${src} (Collection ${colName}) vide → re-indexation recommandée`);
+          isEmpty = true;
+          break;
+        }
+      } catch {
+        isEmpty = true;
+        break;
       }
-    } catch {
-      // Collection inexistante = vide
-      return true;
+    }
+
+    if (isEmpty) {
+      needed.push(src);
     }
   }
 
-  // TODO Phase 7 : vérifier metadata.scrapedAt pour la fraîcheur
-  return false;
+  return needed;
 }
 
 // ─── Indexation d'un lot de documents dans ChromaDB ─────────────────────────
@@ -242,7 +256,14 @@ export async function scrapeAndIndex(
     const settledResults = await Promise.all(promises);
     results.push(...settledResults);
 
+    // S20-1 FIX : Mémoriser la date de succès
     const completedAt = new Date().toISOString();
+    try {
+      const { setSetting } = await import("../repositories/settingsRepository");
+      await setSetting("hub.lastScrapeAt", completedAt);
+    } catch (e) {
+      console.warn("[Hub] Impossible de sauvegarder l'horodatage du scraping:", (e as Error).message);
+    }
 
     _status = {
       phase: "done",

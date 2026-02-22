@@ -43,6 +43,9 @@ export const DEFAULT_SETTINGS: Omit<InsertHubSetting, "updatedAt">[] = [
   { key: "mcp.toolAnalyze",  value: "true",  type: "boolean", category: "mcp", description: "Activer l'outil analyze_code" },
   { key: "mcp.toolSuggest",  value: "true",  type: "boolean", category: "mcp", description: "Activer l'outil suggest_fix" },
   { key: "mcp.toolValidate", value: "true",  type: "boolean", category: "mcp", description: "Activer l'outil validate_finding" },
+  // Hub
+  { key: "hub.autoIndexAtStartup", value: "false", type: "boolean", category: "hub", description: "Lancer l'indexation automatique des collections vides au démarrage du serveur." },
+  { key: "hub.lastScrapeAt",       value: "",      type: "string",  category: "hub", description: "Horodatage du dernier succès du scraping global." },
   // UI
   { key: "ui.theme",    value: "system", type: "select", category: "ui", description: "Thème (light | dark | system)" },
   { key: "ui.language", value: "fr",     type: "select", category: "ui", description: "Langue de l'interface (fr | en)" },
