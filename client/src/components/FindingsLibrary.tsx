@@ -70,24 +70,117 @@ export default function FindingsLibrary() {
     });
   }, [findings, searchQuery, stripAccents, isSmartSearch]);
 
-  // Extract unique pages from reports instead of scanning all findings
+  // Extract unique pages from both reports (structured) and findings (dynamic fallback)
   const availablePages = useMemo(() => {
-    if (!reports) return [];
-    
-    const pageSet = new Set<string>();
-    reports.forEach(r => {
-      try {
-        if (r.auditedPages) {
-          const pages = JSON.parse(r.auditedPages);
-          pages.forEach((p: any) => {
-            if (p.name) pageSet.add(p.name);
-          });
+    const pagesSet = new Set<string>();
+
+    // Source 1: Structured data from reports
+    if (reports) {
+      reports.forEach(r => {
+        try {
+          if (r.auditedPages) {
+            const pages = JSON.parse(r.auditedPages);
+            pages.forEach((p: any) => {
+              if (p.name) pagesSet.add(p.name);
+            });
+          }
+        } catch {}
+      });
+    }
+
+    // Source 2: Dynamic fallback from findings location
+    if (findings) {
+      // Canonical page names in the exact desired order
+      const canonicalPages = [
+        "Toutes les pages",
+        "Commune",
+        "Accueil",
+        "Contact",
+        "Mentions légales",
+        "Déclaration d'accessibilité",
+        "Plan du site",
+        "Aide à la navigation",
+        "Recherche",
+        "Liste des actualités",
+        "Actualité détaillée",
+        "Liste des évènements",
+        "Événement détaillé",
+        "Page Sommaire",
+        "Page de contenu",
+        "Connexion utilisateur",
+      ];
+
+      // Matching rules: stripped pattern -> canonical name
+      const matchingRules: Array<{ pattern: RegExp; canonical: string }> = [
+        { pattern: /^toutes les pages/,                    canonical: "Toutes les pages" },
+        { pattern: /^commune/,                             canonical: "Commune" },
+        { pattern: /^accueil/,                             canonical: "Accueil" },
+        { pattern: /^contact/,                             canonical: "Contact" },
+        { pattern: /^mention/,                             canonical: "Mentions légales" },
+        { pattern: /^declaration/,                         canonical: "Déclaration d'accessibilité" },
+        { pattern: /^plan du site/,                        canonical: "Plan du site" },
+        { pattern: /^aide a la navigation/,                canonical: "Aide à la navigation" },
+        { pattern: /^recherche/,                           canonical: "Recherche" },
+        { pattern: /^liste des actual/,                    canonical: "Liste des actualités" },
+        { pattern: /^actualite/,                           canonical: "Actualité détaillée" },
+        { pattern: /^liste des eve/,                       canonical: "Liste des évènements" },
+        { pattern: /^eve?ne?ment/,                         canonical: "Événement détaillé" },
+        { pattern: /^page sommaire/,                       canonical: "Page Sommaire" },
+        { pattern: /^page de contenu/,                     canonical: "Page de contenu" },
+        { pattern: /^connexion/,                           canonical: "Connexion utilisateur" },
+      ];
+
+      findings.forEach(f => {
+        if (f.location) {
+          let name = f.location.trim();
+          // Remove content in guillemets « ... »
+          name = name.split(/\s*«/)[0].trim();
+          // Remove content after " : ", " - ", " | "
+          name = name.split(/\s+[:|]\s+/)[0];
+          name = name.split(/\s+-\s+/)[0];
+          name = name.trim();
+
+          // Strip accents for matching
+          const stripped = stripAccents(name);
+
+          // Try to match against canonical rules
+          let matched = false;
+          for (const rule of matchingRules) {
+            if (rule.pattern.test(stripped)) {
+              pagesSet.add(rule.canonical);
+              matched = true;
+              break;
+            }
+          }
+
+          // If no rule matched and it's not empty, add it
+          if (!matched && name) {
+            pagesSet.add(name);
+          }
         }
-      } catch {}
+      });
+    }
+
+    // Sort by canonical order if possible, then alphabetical
+    const sortedPages = Array.from(pagesSet).sort((a, b) => {
+      const canonicalOrder = [
+        "Toutes les pages", "Commune", "Accueil", "Contact", 
+        "Mentions légales", "Déclaration d'accessibilité", 
+        "Plan du site", "Aide à la navigation", "Recherche", 
+        "Liste des actualités", "Actualité détaillée", 
+        "Liste des évènements", "Événement détaillé", 
+        "Page Sommaire", "Page de contenu", "Connexion utilisateur"
+      ];
+      const indexA = canonicalOrder.indexOf(a);
+      const indexB = canonicalOrder.indexOf(b);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return a.localeCompare(b);
     });
 
-    return Array.from(pageSet).sort();
-  }, [reports]);
+    return sortedPages;
+  }, [reports, findings, stripAccents]);
 
   // Reuse outer stripAccents
   const strip = stripAccents;
