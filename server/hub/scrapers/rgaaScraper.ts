@@ -1,16 +1,14 @@
 /**
  * rgaaScraper.ts
- * Scrape les critères, tests et glossaire RGAA 4.1.2.
+ * Scrape les critères, tests et glossaire RGAA 4.1.2
  * Collection cible : rgaa_referential
  *
- * Stratégie :
- *  1. Fetch https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/
- *  2. Parse HTML → extrait thématiques + critères + tests
- *  3. Quality Gate : si < 80 critères → fallback rgaa-4.1.2.json (committé)
- *  4. Fetch https://accessibilite.numerique.gouv.fr/methode/glossaire/ → entrées glossaire
+ * Stratégie (par ordre de priorité) :
+ *  1. Chunks locaux (chunksScraper)  — 0 réseau, ~600 docs riches avec méthodologies
+ *  2. Fetch live RGAA                — fallback si chunks absents
+ *  3. Fallback JSON local            — dernier recours (server/hub/data/rgaa-4.1.2.json)
  *
- * IDs   : sha256("rgaa|{criterionRef}|{text_preview}")
- * Fallback : server/hub/data/rgaa-4.1.2.json (toujours disponible)
+ * IDs   : sha256("rgaa|{key}|{text_preview}") via makeScrapedDocumentId
  */
 
 import { fileURLToPath } from "url";
@@ -18,22 +16,14 @@ import * as path from "path";
 import * as fs from "fs/promises";
 import { fetchWithRetry, makeScrapedDocumentId, stripHtml } from "./types";
 import type { ScrapedDocument, ScrapeResult } from "./types";
+import { scrapeFromChunks } from "./chunksScraper";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const RGAA_CRITERIA_URL =
-  "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/";
-const RGAA_GLOSSARY_URL =
-  "https://accessibilite.numerique.gouv.fr/methode/glossaire/";
-
-const FALLBACK_JSON_PATH = path.join(
-  __dirname,
-  "..",
-  "data",
-  "rgaa-4.1.2.json",
-);
-
+const RGAA_CRITERIA_URL = "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests/";
+const RGAA_GLOSSARY_URL = "https://accessibilite.numerique.gouv.fr/methode/glossaire/";
+const FALLBACK_JSON_PATH = path.join(__dirname, "..", "data", "rgaa-4.1.2.json");
 const QUALITY_GATE_MIN = 80;
 
 // ─── Types du fallback JSON ───────────────────────────────────────────────────
@@ -63,132 +53,6 @@ interface RgaaFallbackData {
   glossary?: RgaaFallbackGlossaryEntry[];
 }
 
-// ─── Parse HTML live ──────────────────────────────────────────────────────────
-
-const RGAA_THEME_NAMES: Record<string, string> = {
-  "1": "Images",
-  "2": "Cadres",
-  "3": "Couleurs",
-  "4": "Multimédia",
-  "5": "Tableaux",
-  "6": "Liens",
-  "7": "Scripts",
-  "8": "Éléments obligatoires",
-  "9": "Structuration de l'information",
-  "10": "Présentation de l'information",
-  "11": "Formulaires",
-  "12": "Navigation",
-  "13": "Consultation",
-};
-
-interface ParsedCriterion {
-  reference: string;
-  thematic: string;
-  title: string;
-  tests: string[];
-  raw: string;
-}
-
-function parseRgaaHtml(html: string): ParsedCriterion[] {
-  const criteria: ParsedCriterion[] = [];
-
-  // L'URL présente les critères sous des ancres #1, #1.1, etc.
-  // Structure : sections h2 (thématiques) → sections article/div (critères)
-
-  // Chercher les blocs de critères via pattern Critère X.Y
-  // Le HTML est généré par un framework (Vue/Nuxt) mais lisible en statique
-  const criterionPattern =
-    /Crit[eè]re\s+(\d+\.\d+)[^<]*<\/[^>]+>([\s\S]*?)(?=Crit[eè]re\s+\d+\.\d+|<\/(?:section|article)>|$)/gi;
-
-  // Extraire les thématiques (h2 ou strong with "1. Images" etc.)
-  const thematicMap = new Map<string, string>();
-  const thematicPattern =
-    /<h2[^>]*>\s*(\d+)\.\s+([^<]+)<\/h2>/gi;
-  let thMatch: RegExpExecArray | null;
-  while ((thMatch = thematicPattern.exec(html)) !== null) {
-    thematicMap.set(thMatch[1], stripHtml(thMatch[2]).trim());
-  }
-
-  let cMatch: RegExpExecArray | null;
-  while ((cMatch = criterionPattern.exec(html)) !== null) {
-    const ref = cMatch[1];
-    const rawBlock = cMatch[2];
-
-    // Extraire le numéro de thématique depuis la référence (ex: "1.3" → "1")
-    const thematicNum = ref.split(".")[0];
-    const thematic = thematicMap.get(thematicNum) ?? RGAA_THEME_NAMES[thematicNum] ?? `Thématique ${thematicNum}`;
-
-    // Extraire la question du critère (premier fragment de texte significatif)
-    const title = stripHtml(rawBlock).slice(0, 250).trim();
-
-    // Extraire les tests mentionnés (pattern "1.1.1", "1.1.2") et dédupliquer
-    const testRefs = Array.from(new Set(Array.from(rawBlock.matchAll(/\b(\d+\.\d+\.\d+)\b/g)).map(
-      (m) => m[1],
-    )));
-
-    const raw = `Critère RGAA ${ref} [${thematic}] : ${title}`;
-
-    if (ref && title.length > 10) {
-      criteria.push({ reference: ref, thematic, title, tests: testRefs, raw });
-    }
-  }
-
-  // Fallback si le pattern HTML a raté — essayer avec les ancres de liens
-  if (criteria.length < 10) {
-    const anchorPattern =
-      /#(\d+\.\d+)['"]/g;
-    const anchorRefs = new Set<string>();
-    let aMatch: RegExpExecArray | null;
-    while ((aMatch = anchorPattern.exec(html)) !== null) {
-      anchorRefs.add(aMatch[1]);
-    }
-
-    // Si aucun critère parsé mais des refs trouvées → le HTML est probablement SSR
-    // Dans ce cas le fallback JSON sera utilisé automatiquement
-    console.warn(
-      `[Scraper/RGAA] Parse HTML: seulement ${criteria.length} critères (${anchorRefs.size} refs détectées)`,
-    );
-  }
-
-  return criteria;
-}
-
-interface GlossaryEntry {
-  term: string;
-  definition: string;
-}
-
-function parseGlossaryHtml(html: string): GlossaryEntry[] {
-  const entries: GlossaryEntry[] = [];
-
-  // Motif : <dt>...</dt><dd>...</dd>
-  const dtddPattern = /<dt[^>]*>([\s\S]*?)<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/gi;
-  let match: RegExpExecArray | null;
-
-  while ((match = dtddPattern.exec(html)) !== null) {
-    const term = stripHtml(match[1]).trim();
-    const def = stripHtml(match[2]).trim();
-    if (term && def.length > 10) {
-      entries.push({ term, definition: def.slice(0, 600) });
-    }
-  }
-
-  // Fallback : h3 + section
-  if (entries.length < 5) {
-    const termPattern =
-      /<h[23][^>]*id="([^"]+)"[^>]*>([^<]+)<\/h[23]>\s*<p[^>]*>([\s\S]*?)<\/p>/gi;
-    while ((match = termPattern.exec(html)) !== null) {
-      const term = stripHtml(match[2]).trim();
-      const def = stripHtml(match[3]).trim();
-      if (term && def.length > 10) {
-        entries.push({ term, definition: def.slice(0, 600) });
-      }
-    }
-  }
-
-  return entries;
-}
-
 // ─── Fallback JSON local ──────────────────────────────────────────────────────
 
 async function loadFallbackJson(): Promise<RgaaFallbackData | null> {
@@ -201,34 +65,12 @@ async function loadFallbackJson(): Promise<RgaaFallbackData | null> {
   }
 }
 
-function buildDocumentsFromFallback(
-  data: RgaaFallbackData,
-  scrapedAt: string,
-): ScrapedDocument[] {
+function buildDocumentsFromFallback(data: RgaaFallbackData, scrapedAt: string): ScrapedDocument[] {
   const docs: ScrapedDocument[] = [];
 
   for (const thematic of data.thematics) {
-    // 1 doc par thématique (résumé)
-    const thematicText = `Thématique RGAA ${thematic.id}. ${thematic.name} — ${thematic.criteria.length} critères`;
-    docs.push({
-      id: makeScrapedDocumentId("rgaa", `thematic-${thematic.id}`, thematicText),
-      text: thematicText,
-      collection: "rgaa_referential",
-      metadata: {
-        source: "rgaa",
-        url: `${RGAA_CRITERIA_URL}#${thematic.id}`,
-        thematic: thematic.name,
-        type: "criterion",
-        lang: "fr",
-        scrapedAt,
-      },
-    });
-
-    // 1 doc par critère + 1 doc par TEST
     for (const criterion of thematic.criteria) {
       const wcagRef = criterion.mappings?.wcag?.join(", ") ?? "";
-      
-      // Document de base du critère
       const critText = [
         `Critère RGAA ${criterion.reference} [${thematic.name}] : ${criterion.title}`,
         criterion.wcagLevel ? `Niveau WCAG : ${criterion.wcagLevel}` : "",
@@ -250,10 +92,9 @@ function buildDocumentsFromFallback(
         },
       });
 
-      // Documents ATOMIQUES par TEST
       if (criterion.tests) {
         for (const testRef of criterion.tests) {
-          const testText = `Test RGAA ${testRef} [Thématique : ${thematic.name}] : Ce test vérifie la conformité au critère ${criterion.reference} (${criterion.title}).`;
+          const testText = `Test RGAA ${testRef} [${thematic.name}] : Ce test vérifie la conformité au critère ${criterion.reference} (${criterion.title}).`;
           docs.push({
             id: makeScrapedDocumentId("rgaa", `test-${testRef}`, testText),
             text: testText,
@@ -274,33 +115,36 @@ function buildDocumentsFromFallback(
     }
   }
 
-  // Entrées glossaire
-  if (data.glossary) {
-    for (const entry of data.glossary) {
-      const text = `Glossaire RGAA — ${entry.term} : ${entry.definition}`;
-      docs.push({
-        id: makeScrapedDocumentId("rgaa", `glossary-${entry.term}`, text),
-        text: text.slice(0, 1200),
-        collection: "rgaa_referential",
-        metadata: {
-          source: "rgaa",
-          url: RGAA_GLOSSARY_URL,
-          type: "glossary",
-          lang: "fr",
-          scrapedAt,
-        },
-      });
-    }
+  // Glossaire
+  for (const entry of data.glossary ?? []) {
+    const text = `Glossaire RGAA — ${entry.term} : ${entry.definition}`;
+    docs.push({
+      id: makeScrapedDocumentId("rgaa", `glossary-${entry.term}`, text),
+      text: text.slice(0, 1200),
+      collection: "rgaa_referential",
+      metadata: {
+        source: "rgaa",
+        url: RGAA_GLOSSARY_URL,
+        type: "glossary",
+        lang: "fr",
+        scrapedAt,
+      },
+    });
   }
 
   return docs;
 }
 
-// ─── Scraping live ────────────────────────────────────────────────────────────
+// ─── Scraping live (fallback réseau) ─────────────────────────────────────────
 
-async function scrapeRgaaLive(
-  scrapedAt: string,
-): Promise<{ documents: ScrapedDocument[]; errors: string[] }> {
+const RGAA_THEME_NAMES: Record<string, string> = {
+  "1": "Images", "2": "Cadres", "3": "Couleurs", "4": "Multimédia",
+  "5": "Tableaux", "6": "Liens", "7": "Scripts", "8": "Éléments obligatoires",
+  "9": "Structuration de l'information", "10": "Présentation de l'information",
+  "11": "Formulaires", "12": "Navigation", "13": "Consultation",
+};
+
+async function scrapeRgaaLive(scrapedAt: string): Promise<{ documents: ScrapedDocument[]; errors: string[] }> {
   const documents: ScrapedDocument[] = [];
   const errors: string[] = [];
 
@@ -308,48 +152,46 @@ async function scrapeRgaaLive(
   try {
     const res = await fetchWithRetry(RGAA_CRITERIA_URL, {}, 3, 30_000);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
     const html = await res.text();
-    const criteria = parseRgaaHtml(html);
 
-    criteria.forEach((c) => {
-      // Document du critère
-      const critText = `Critère RGAA ${c.reference} [${c.thematic}] : ${c.title}`;
+    const criterionPattern = /Crit[eè]re\s+(\d+\.\d+)[^<]*<\/[^>]+>([\s\S]*?)(?=Crit[eè]re\s+\d+\.\d+|<\/(?:section|article)>|$)/gi;
+
+    const thematicMap = new Map<string, string>();
+    const thematicPattern = /<h2[^>]*>\s*(\d+)\.\s+([^<]+)<\/h2>/gi;
+    let thMatch: RegExpExecArray | null;
+    while ((thMatch = thematicPattern.exec(html)) !== null) {
+      thematicMap.set(thMatch[1], stripHtml(thMatch[2]).trim());
+    }
+
+    let cMatch: RegExpExecArray | null;
+    while ((cMatch = criterionPattern.exec(html)) !== null) {
+      const ref = cMatch[1];
+      const rawBlock = cMatch[2];
+      const thematicNum = ref.split(".")[0];
+      const thematic = thematicMap.get(thematicNum) ?? RGAA_THEME_NAMES[thematicNum] ?? `Thématique ${thematicNum}`;
+      const title = stripHtml(rawBlock).slice(0, 250).trim();
+      const testRefs = Array.from(new Set(Array.from(rawBlock.matchAll(/\b(\d+\.\d+\.\d+)\b/g)).map(m => m[1])));
+
+      if (!ref || title.length <= 10) continue;
+
+      const critText = `Critère RGAA ${ref} [${thematic}] : ${title}`;
       documents.push({
-        id: makeScrapedDocumentId("rgaa", `crit-${c.reference}`, critText),
+        id: makeScrapedDocumentId("rgaa", `crit-${ref}`, critText),
         text: critText,
         collection: "rgaa_referential",
-        metadata: {
-          source: "rgaa",
-          url: `${RGAA_CRITERIA_URL}#${c.reference}`,
-          criterion: c.reference,
-          thematic: c.thematic,
-          type: "criterion",
-          lang: "fr",
-          scrapedAt,
-        },
+        metadata: { source: "rgaa", url: `${RGAA_CRITERIA_URL}#${ref}`, criterion: ref, thematic, type: "criterion", lang: "fr", scrapedAt },
       });
 
-      // Documents pour chaque test détecté
-      c.tests.forEach((testRef) => {
-        const testText = `Test RGAA ${testRef} [Thématique : ${c.thematic}] : Ce test est rattaché au critère ${c.reference}.`;
+      for (const testRef of testRefs) {
+        const testText = `Test RGAA ${testRef} [${thematic}] : Ce test est rattaché au critère ${ref}.`;
         documents.push({
           id: makeScrapedDocumentId("rgaa", `test-${testRef}`, testText),
           text: testText,
           collection: "rgaa_referential",
-          metadata: {
-            source: "rgaa",
-            url: `${RGAA_CRITERIA_URL}#${testRef}`,
-            criterion: c.reference,
-            test: testRef,
-            thematic: c.thematic,
-            type: "test",
-            lang: "fr",
-            scrapedAt,
-          },
+          metadata: { source: "rgaa", url: `${RGAA_CRITERIA_URL}#${testRef}`, criterion: ref, test: testRef, thematic, type: "test", lang: "fr", scrapedAt },
         });
-      });
-    });
+      }
+    }
   } catch (e) {
     errors.push(`critères: ${(e as Error).message}`);
   }
@@ -358,23 +200,19 @@ async function scrapeRgaaLive(
   try {
     const res = await fetchWithRetry(RGAA_GLOSSARY_URL, {}, 3, 30_000);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
     const html = await res.text();
-    const glossary = parseGlossaryHtml(html);
-
-    for (const entry of glossary) {
-      const text = `Glossaire RGAA — ${entry.term} : ${entry.definition}`;
+    const dtddPattern = /<dt[^>]*>([\s\S]*?)<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/gi;
+    let match: RegExpExecArray | null;
+    while ((match = dtddPattern.exec(html)) !== null) {
+      const term = stripHtml(match[1]).trim();
+      const def = stripHtml(match[2]).trim();
+      if (!term || def.length <= 10) continue;
+      const text = `Glossaire RGAA — ${term} : ${def.slice(0, 600)}`;
       documents.push({
-        id: makeScrapedDocumentId("rgaa", `glossary-${entry.term}`, text),
+        id: makeScrapedDocumentId("rgaa", `glossary-${term}`, text),
         text: text.slice(0, 1200),
         collection: "rgaa_referential",
-        metadata: {
-          source: "rgaa",
-          url: RGAA_GLOSSARY_URL,
-          type: "glossary",
-          lang: "fr",
-          scrapedAt,
-        },
+        metadata: { source: "rgaa", url: RGAA_GLOSSARY_URL, type: "glossary", lang: "fr", scrapedAt },
       });
     }
   } catch (e) {
@@ -386,6 +224,12 @@ async function scrapeRgaaLive(
 
 // ─── Point d'entrée public ───────────────────────────────────────────────────
 
+/**
+ * Priorité :
+ *  1. Chunks locaux (riches, 0-réseau)
+ *  2. Scraping live RGAA (fallback réseau)
+ *  3. JSON embarqué (dernier recours)
+ */
 export async function scrapeRgaa(): Promise<{
   documents: ScrapedDocument[];
   result: ScrapeResult;
@@ -393,62 +237,58 @@ export async function scrapeRgaa(): Promise<{
 }> {
   const startedAt = Date.now();
   const scrapedAt = new Date().toISOString();
-  let usedFallback = false;
 
-  // 1 — Tentative scraping live
-  console.log("[Scraper/RGAA] Tentative de scraping live...");
-  const { documents: liveDocs, errors } = await scrapeRgaaLive(scrapedAt);
+  // ── 1. Tentative chunks locaux ────────────────────────────────────────────
+  console.log("[Scraper/RGAA] Tentative chunks locaux...");
+  const { documents: chunkDocs, result: chunkResult } = await scrapeFromChunks();
+  const chunkCriteria = chunkDocs.filter(d => d.metadata.type === "criterion").length;
 
-  const criteriaCount = liveDocs.filter(
-    (d) => d.metadata.type === "criterion",
-  ).length;
-
-  // 2 — Quality Gate : < 80 critères → fallback JSON
-  if (criteriaCount < QUALITY_GATE_MIN) {
-    console.warn(
-      `[Scraper/RGAA] Quality Gate échoué : ${criteriaCount} critères (min: ${QUALITY_GATE_MIN}) → fallback JSON`,
-    );
-    const fallback = await loadFallbackJson();
-
-    if (fallback) {
-      usedFallback = true;
-      const fallbackDocs = buildDocumentsFromFallback(fallback, scrapedAt);
-
-      console.log(
-        `[Scraper/RGAA] Fallback JSON : ${fallbackDocs.length} documents (v${fallback.version})`,
-      );
-
-      return {
-        documents: fallbackDocs,
-        result: {
-          source: "rgaa",
-          success: true,
-          count: fallbackDocs.length,
-          errors: [`Fallback JSON utilisé (live: ${criteriaCount} critères)`, ...errors],
-          durationMs: Date.now() - startedAt,
-        },
-        usedFallback: true,
-      };
-    }
-
-    // Si le fallback JSON est aussi absent, retourner ce qu'on a
-    console.error("[Scraper/RGAA] Fallback JSON introuvable ET live insuffisant");
+  if (chunkCriteria >= QUALITY_GATE_MIN) {
+    console.log(`[Scraper/RGAA] Chunks locaux OK : ${chunkDocs.length} documents (${chunkCriteria} critères)`);
+    return { documents: chunkDocs, result: { ...chunkResult, source: "rgaa" }, usedFallback: false };
   }
 
-  const success = liveDocs.length > 0;
-  console.log(
-    `[Scraper/RGAA] Live : ${liveDocs.length} documents (${criteriaCount} critères)`,
-  );
+  console.warn(`[Scraper/RGAA] Chunks insuffisants (${chunkCriteria} critères) → fallback live`);
 
+  // ── 2. Scraping live RGAA ────────────────────────────────────────────────
+  console.log("[Scraper/RGAA] Tentative scraping live...");
+  const { documents: liveDocs, errors } = await scrapeRgaaLive(scrapedAt);
+  const liveCriteria = liveDocs.filter(d => d.metadata.type === "criterion").length;
+
+  if (liveCriteria >= QUALITY_GATE_MIN) {
+    console.log(`[Scraper/RGAA] Live OK : ${liveDocs.length} documents`);
+    return {
+      documents: liveDocs,
+      result: { source: "rgaa", success: true, count: liveDocs.length, errors, durationMs: Date.now() - startedAt },
+      usedFallback: false,
+    };
+  }
+
+  // ── 3. Fallback JSON embarqué ─────────────────────────────────────────────
+  console.warn(`[Scraper/RGAA] Live insuffisant (${liveCriteria} critères) → fallback JSON`);
+  const fallback = await loadFallbackJson();
+
+  if (fallback) {
+    const fallbackDocs = buildDocumentsFromFallback(fallback, scrapedAt);
+    console.log(`[Scraper/RGAA] Fallback JSON : ${fallbackDocs.length} documents (v${fallback.version})`);
+    return {
+      documents: fallbackDocs,
+      result: {
+        source: "rgaa",
+        success: true,
+        count: fallbackDocs.length,
+        errors: [`Fallback JSON utilisé (chunks: ${chunkCriteria}, live: ${liveCriteria})`, ...errors],
+        durationMs: Date.now() - startedAt,
+      },
+      usedFallback: true,
+    };
+  }
+
+  // Aucune source disponible
+  console.error("[Scraper/RGAA] Toutes les sources ont échoué");
   return {
-    documents: liveDocs,
-    result: {
-      source: "rgaa",
-      success,
-      count: liveDocs.length,
-      errors,
-      durationMs: Date.now() - startedAt,
-    },
-    usedFallback,
+    documents: [],
+    result: { source: "rgaa", success: false, count: 0, errors: ["Chunks, live et JSON indisponibles"], durationMs: Date.now() - startedAt },
+    usedFallback: true,
   };
 }

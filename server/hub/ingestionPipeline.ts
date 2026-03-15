@@ -148,8 +148,7 @@ async function bootstrapFromExistingFindings(): Promise<IngestionResult> {
         t.solution ? `Solution : ${t.solution}` : "",
       ].filter(Boolean).join("\n");
 
-      const collection: ChromaCollectionName =
-        t.status === "approved" ? "rgaa_expertise" : "rgaa_findings";
+      const collection: ChromaCollectionName = "rgaa_findings";
 
       return {
         id: `template-${t.signatureHash}`,

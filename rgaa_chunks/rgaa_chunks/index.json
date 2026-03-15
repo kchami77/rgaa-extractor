@@ -1,0 +1,960 @@
+{
+  "generator": "rgaa_json_scraper v1.0",
+  "source": "JSON officiel DISIC/accessibilite.numerique.gouv.fr",
+  "criteres": [
+    {
+      "fichier": "critere_1.1.md",
+      "critere_id": "1.1",
+      "critere_titre": "Chaque image porteuse d’information a-t-elle une alternative textuelle ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 8,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.1"
+    },
+    {
+      "fichier": "critere_1.2.md",
+      "critere_id": "1.2",
+      "critere_titre": "Chaque image de décoration est-elle correctement ignorée par les technologies d’assistance ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 6,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.2"
+    },
+    {
+      "fichier": "critere_1.3.md",
+      "critere_id": "1.3",
+      "critere_titre": "Pour chaque image porteuse d’information ayant une alternative textuelle, cette alternative est-elle pertinente (hors cas particuliers) ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 9,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.3"
+    },
+    {
+      "fichier": "critere_1.4.md",
+      "critere_id": "1.4",
+      "critere_titre": "Pour chaque image utilisée comme CAPTCHA ou comme image-test, ayant une alternative textuelle, cette alternative permet-elle d’identifier la nature et la fonction de l’image ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 7,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.4"
+    },
+    {
+      "fichier": "critere_1.5.md",
+      "critere_id": "1.5",
+      "critere_titre": "Pour chaque image utilisée comme CAPTCHA, une solution d’accès alternatif au contenu ou à la fonction du CAPTCHA est-elle présente ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.5"
+    },
+    {
+      "fichier": "critere_1.6.md",
+      "critere_id": "1.6",
+      "critere_titre": "Chaque image porteuse d’information a-t-elle, si nécessaire, une description détaillée ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 10,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.6"
+    },
+    {
+      "fichier": "critere_1.7.md",
+      "critere_id": "1.7",
+      "critere_titre": "Pour chaque image porteuse d’information ayant une description détaillée, cette description est-elle pertinente ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 6,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.7"
+    },
+    {
+      "fichier": "critere_1.8.md",
+      "critere_id": "1.8",
+      "critere_titre": "Chaque image texte porteuse d’information, en l’absence d’un mécanisme de remplacement, doit si possible être remplacée par du texte stylé. Cette règle est-elle respectée (hors cas particuliers) ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 6,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.8"
+    },
+    {
+      "fichier": "critere_1.9.md",
+      "critere_id": "1.9",
+      "critere_titre": "Chaque légende d’image est-elle, si nécessaire, correctement reliée à l’image correspondante ?",
+      "thematique_id": 1,
+      "thematique": "Images",
+      "nb_tests": 5,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#1.9"
+    },
+    {
+      "fichier": "critere_2.1.md",
+      "critere_id": "2.1",
+      "critere_titre": "Chaque cadre a-t-il un titre de cadre ?",
+      "thematique_id": 2,
+      "thematique": "Cadres",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#2.1"
+    },
+    {
+      "fichier": "critere_2.2.md",
+      "critere_id": "2.2",
+      "critere_titre": "Pour chaque cadre ayant un titre de cadre, ce titre de cadre est-il pertinent ?",
+      "thematique_id": 2,
+      "thematique": "Cadres",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#2.2"
+    },
+    {
+      "fichier": "critere_3.1.md",
+      "critere_id": "3.1",
+      "critere_titre": "Dans chaque page web, l’information ne doit pas être donnée uniquement par la couleur. Cette règle est-elle respectée ?",
+      "thematique_id": 3,
+      "thematique": "Couleurs",
+      "nb_tests": 6,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#3.1"
+    },
+    {
+      "fichier": "critere_3.2.md",
+      "critere_id": "3.2",
+      "critere_titre": "Dans chaque page web, le contraste entre la couleur du texte et la couleur de son arrière-plan est-il suffisamment élevé (hors cas particuliers) ?",
+      "thematique_id": 3,
+      "thematique": "Couleurs",
+      "nb_tests": 5,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#3.2"
+    },
+    {
+      "fichier": "critere_3.3.md",
+      "critere_id": "3.3",
+      "critere_titre": "Dans chaque page web, les couleurs utilisées dans les composants d’interface ou les éléments graphiques porteurs d’informations sont-elles suffisamment contrastées (hors cas particuliers) ?",
+      "thematique_id": 3,
+      "thematique": "Couleurs",
+      "nb_tests": 4,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#3.3"
+    },
+    {
+      "fichier": "critere_4.1.md",
+      "critere_id": "4.1",
+      "critere_titre": "Chaque média temporel pré-enregistré a-t-il, si nécessaire, une transcription textuelle ou une audiodescription (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.1"
+    },
+    {
+      "fichier": "critere_4.2.md",
+      "critere_id": "4.2",
+      "critere_titre": "Pour chaque média temporel pré-enregistré ayant une transcription textuelle ou une audiodescription synchronisée, celles-ci sont-elles pertinentes (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.2"
+    },
+    {
+      "fichier": "critere_4.3.md",
+      "critere_id": "4.3",
+      "critere_titre": "Chaque média temporel synchronisé pré-enregistré a-t-il, si nécessaire, des sous-titres synchronisés (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.3"
+    },
+    {
+      "fichier": "critere_4.4.md",
+      "critere_id": "4.4",
+      "critere_titre": "Pour chaque média temporel synchronisé pré-enregistré ayant des sous-titres synchronisés, ces sous-titres sont-ils pertinents ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.4"
+    },
+    {
+      "fichier": "critere_4.5.md",
+      "critere_id": "4.5",
+      "critere_titre": "Chaque média temporel pré-enregistré a-t-il, si nécessaire, une audiodescription synchronisée (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.5"
+    },
+    {
+      "fichier": "critere_4.6.md",
+      "critere_id": "4.6",
+      "critere_titre": "Pour chaque média temporel pré-enregistré ayant une audiodescription synchronisée, celle-ci est-elle pertinente ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.6"
+    },
+    {
+      "fichier": "critere_4.7.md",
+      "critere_id": "4.7",
+      "critere_titre": "Chaque média temporel est-il clairement identifiable (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.7"
+    },
+    {
+      "fichier": "critere_4.8.md",
+      "critere_id": "4.8",
+      "critere_titre": "Chaque média non temporel a-t-il, si nécessaire, une alternative (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.8"
+    },
+    {
+      "fichier": "critere_4.9.md",
+      "critere_id": "4.9",
+      "critere_titre": "Pour chaque média non temporel ayant une alternative, cette alternative est-elle pertinente ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.9"
+    },
+    {
+      "fichier": "critere_4.10.md",
+      "critere_id": "4.10",
+      "critere_titre": "Chaque son déclenché automatiquement est-il contrôlable par l’utilisateur ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.10"
+    },
+    {
+      "fichier": "critere_4.11.md",
+      "critere_id": "4.11",
+      "critere_titre": "La consultation de chaque média temporel est-elle, si nécessaire, contrôlable par le clavier et tout dispositif de pointage ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.11"
+    },
+    {
+      "fichier": "critere_4.12.md",
+      "critere_id": "4.12",
+      "critere_titre": "La consultation de chaque média non temporel est-elle contrôlable par le clavier et tout dispositif de pointage ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.12"
+    },
+    {
+      "fichier": "critere_4.13.md",
+      "critere_id": "4.13",
+      "critere_titre": "Chaque média temporel et non temporel est-il compatible avec les technologies d’assistance (hors cas particuliers) ?",
+      "thematique_id": 4,
+      "thematique": "Multimédia",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#4.13"
+    },
+    {
+      "fichier": "critere_5.1.md",
+      "critere_id": "5.1",
+      "critere_titre": "Chaque tableau de données complexe a-t-il un résumé ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.1"
+    },
+    {
+      "fichier": "critere_5.2.md",
+      "critere_id": "5.2",
+      "critere_titre": "Pour chaque tableau de données complexe ayant un résumé, celui-ci est-il pertinent ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.2"
+    },
+    {
+      "fichier": "critere_5.3.md",
+      "critere_id": "5.3",
+      "critere_titre": "Pour chaque tableau de mise en forme, le contenu linéarisé reste-t-il compréhensible ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.3"
+    },
+    {
+      "fichier": "critere_5.4.md",
+      "critere_id": "5.4",
+      "critere_titre": "Pour chaque tableau de données ayant un titre, le titre est-il correctement associé au tableau de données ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.4"
+    },
+    {
+      "fichier": "critere_5.5.md",
+      "critere_id": "5.5",
+      "critere_titre": "Pour chaque tableau de données ayant un titre, celui-ci est-il pertinent ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.5"
+    },
+    {
+      "fichier": "critere_5.6.md",
+      "critere_id": "5.6",
+      "critere_titre": "Pour chaque tableau de données, chaque en-tête de colonne et chaque en-tête de ligne sont-ils correctement déclarés ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 4,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.6"
+    },
+    {
+      "fichier": "critere_5.7.md",
+      "critere_id": "5.7",
+      "critere_titre": "Pour chaque tableau de données, la technique appropriée permettant d’associer chaque cellule avec ses en-têtes est-elle utilisée (hors cas particuliers) ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 5,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.7"
+    },
+    {
+      "fichier": "critere_5.8.md",
+      "critere_id": "5.8",
+      "critere_titre": "Chaque tableau de mise en forme ne doit pas utiliser d’éléments propres aux tableaux de données. Cette règle est-elle respectée ?",
+      "thematique_id": 5,
+      "thematique": "Tableaux",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#5.8"
+    },
+    {
+      "fichier": "critere_6.1.md",
+      "critere_id": "6.1",
+      "critere_titre": "Chaque lien est-il explicite (hors cas particuliers) ?",
+      "thematique_id": 6,
+      "thematique": "Liens",
+      "nb_tests": 5,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#6.1"
+    },
+    {
+      "fichier": "critere_6.2.md",
+      "critere_id": "6.2",
+      "critere_titre": "Dans chaque page web, chaque lien a-t-il un intitulé ?",
+      "thematique_id": 6,
+      "thematique": "Liens",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#6.2"
+    },
+    {
+      "fichier": "critere_7.1.md",
+      "critere_id": "7.1",
+      "critere_titre": "Chaque script est-il, si nécessaire, compatible avec les technologies d’assistance ?",
+      "thematique_id": 7,
+      "thematique": "Scripts",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#7.1"
+    },
+    {
+      "fichier": "critere_7.2.md",
+      "critere_id": "7.2",
+      "critere_titre": "Pour chaque script ayant une alternative, cette alternative est-elle pertinente ?",
+      "thematique_id": 7,
+      "thematique": "Scripts",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#7.2"
+    },
+    {
+      "fichier": "critere_7.3.md",
+      "critere_id": "7.3",
+      "critere_titre": "Chaque script est-il contrôlable par le clavier et par tout dispositif de pointage (hors cas particuliers) ?",
+      "thematique_id": 7,
+      "thematique": "Scripts",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#7.3"
+    },
+    {
+      "fichier": "critere_7.4.md",
+      "critere_id": "7.4",
+      "critere_titre": "Pour chaque script qui initie un changement de contexte, l’utilisateur est-il averti ou en a-t-il le contrôle ?",
+      "thematique_id": 7,
+      "thematique": "Scripts",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#7.4"
+    },
+    {
+      "fichier": "critere_7.5.md",
+      "critere_id": "7.5",
+      "critere_titre": "Dans chaque page web, les messages de statut sont-ils correctement restitués par les technologies d’assistance ?",
+      "thematique_id": 7,
+      "thematique": "Scripts",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#7.5"
+    },
+    {
+      "fichier": "critere_8.1.md",
+      "critere_id": "8.1",
+      "critere_titre": "Chaque page web est-elle définie par un type de document ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.1"
+    },
+    {
+      "fichier": "critere_8.2.md",
+      "critere_id": "8.2",
+      "critere_titre": "Pour chaque page web, le code source généré est-il valide selon le type de document spécifié ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.2"
+    },
+    {
+      "fichier": "critere_8.3.md",
+      "critere_id": "8.3",
+      "critere_titre": "Dans chaque page web, la langue par défaut est-elle présente ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.3"
+    },
+    {
+      "fichier": "critere_8.4.md",
+      "critere_id": "8.4",
+      "critere_titre": "Pour chaque page web ayant une langue par défaut, le code de langue est-il pertinent ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.4"
+    },
+    {
+      "fichier": "critere_8.5.md",
+      "critere_id": "8.5",
+      "critere_titre": "Chaque page web a-t-elle un titre de page ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.5"
+    },
+    {
+      "fichier": "critere_8.6.md",
+      "critere_id": "8.6",
+      "critere_titre": "Pour chaque page web ayant un titre de page, ce titre est-il pertinent ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.6"
+    },
+    {
+      "fichier": "critere_8.7.md",
+      "critere_id": "8.7",
+      "critere_titre": "Dans chaque page web, chaque changement de langue est-il indiqué dans le code source (hors cas particuliers) ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.7"
+    },
+    {
+      "fichier": "critere_8.8.md",
+      "critere_id": "8.8",
+      "critere_titre": "Dans chaque page web, le code de langue de chaque changement de langue est-il valide et pertinent ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.8"
+    },
+    {
+      "fichier": "critere_8.9.md",
+      "critere_id": "8.9",
+      "critere_titre": "Dans chaque page web, les balises ne doivent pas être utilisées uniquement à des fins de présentation. Cette règle est-elle respectée ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.9"
+    },
+    {
+      "fichier": "critere_8.10.md",
+      "critere_id": "8.10",
+      "critere_titre": "Dans chaque page web, les changements du sens de lecture sont-ils signalés ?",
+      "thematique_id": 8,
+      "thematique": "Éléments obligatoires",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#8.10"
+    },
+    {
+      "fichier": "critere_9.1.md",
+      "critere_id": "9.1",
+      "critere_titre": "Dans chaque page web, l’information est-elle structurée par l’utilisation appropriée de titres ?",
+      "thematique_id": 9,
+      "thematique": "Structuration de l’information",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#9.1"
+    },
+    {
+      "fichier": "critere_9.2.md",
+      "critere_id": "9.2",
+      "critere_titre": "Dans chaque page web, la structure du document est-elle cohérente (hors cas particuliers) ?",
+      "thematique_id": 9,
+      "thematique": "Structuration de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#9.2"
+    },
+    {
+      "fichier": "critere_9.3.md",
+      "critere_id": "9.3",
+      "critere_titre": "Dans chaque page web, chaque liste est-elle correctement structurée ?",
+      "thematique_id": 9,
+      "thematique": "Structuration de l’information",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#9.3"
+    },
+    {
+      "fichier": "critere_9.4.md",
+      "critere_id": "9.4",
+      "critere_titre": "Dans chaque page web, chaque citation est-elle correctement indiquée ?",
+      "thematique_id": 9,
+      "thematique": "Structuration de l’information",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#9.4"
+    },
+    {
+      "fichier": "critere_10.1.md",
+      "critere_id": "10.1",
+      "critere_titre": "Dans le site web, des feuilles de styles sont-elles utilisées pour contrôler la présentation de l’information ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.1"
+    },
+    {
+      "fichier": "critere_10.2.md",
+      "critere_id": "10.2",
+      "critere_titre": "Dans chaque page web, le contenu visible porteur d’information reste-t-il présent lorsque les feuilles de styles sont désactivées ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.2"
+    },
+    {
+      "fichier": "critere_10.3.md",
+      "critere_id": "10.3",
+      "critere_titre": "Dans chaque page web, l’information reste-t-elle compréhensible lorsque les feuilles de styles sont désactivées ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.3"
+    },
+    {
+      "fichier": "critere_10.4.md",
+      "critere_id": "10.4",
+      "critere_titre": "Dans chaque page web, le texte reste-t-il lisible lorsque la taille des caractères est augmentée jusqu’à 200 %, au moins (hors cas particuliers) ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.4"
+    },
+    {
+      "fichier": "critere_10.5.md",
+      "critere_id": "10.5",
+      "critere_titre": "Dans chaque page web, les déclarations CSS de couleurs de fond d’élément et de police sont-elles correctement utilisées ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.5"
+    },
+    {
+      "fichier": "critere_10.6.md",
+      "critere_id": "10.6",
+      "critere_titre": "Dans chaque page web, chaque lien dont la nature n’est pas évidente est-il visible par rapport au texte environnant ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.6"
+    },
+    {
+      "fichier": "critere_10.7.md",
+      "critere_id": "10.7",
+      "critere_titre": "Dans chaque page web, pour chaque élément recevant le focus, la prise de focus est-elle visible ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.7"
+    },
+    {
+      "fichier": "critere_10.8.md",
+      "critere_id": "10.8",
+      "critere_titre": "Pour chaque page web, les contenus cachés ont-ils vocation à être ignorés par les technologies d’assistance ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.8"
+    },
+    {
+      "fichier": "critere_10.9.md",
+      "critere_id": "10.9",
+      "critere_titre": "Dans chaque page web, l’information ne doit pas être donnée uniquement par la forme, taille ou position. Cette règle est-elle respectée ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 4,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.9"
+    },
+    {
+      "fichier": "critere_10.10.md",
+      "critere_id": "10.10",
+      "critere_titre": "Dans chaque page web, l’information ne doit pas être donnée par la forme, taille ou position uniquement. Cette règle est-elle implémentée de façon pertinente ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 4,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.10"
+    },
+    {
+      "fichier": "critere_10.11.md",
+      "critere_id": "10.11",
+      "critere_titre": "Pour chaque page web, les contenus peuvent-ils être présentés sans perte d’information ou de fonctionnalité et sans avoir recours soit à un défilement vertical pour une fenêtre ayant une hauteur de 256 px, soit à un défilement horizontal pour une fenêtre ayant une largeur de 320 px (hors cas particuliers) ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.11"
+    },
+    {
+      "fichier": "critere_10.12.md",
+      "critere_id": "10.12",
+      "critere_titre": "Dans chaque page web, les propriétés d’espacement du texte peuvent-elles être redéfinies par l’utilisateur sans perte de contenu ou de fonctionnalité (hors cas particuliers) ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.12"
+    },
+    {
+      "fichier": "critere_10.13.md",
+      "critere_id": "10.13",
+      "critere_titre": "Dans chaque page web, les contenus additionnels apparaissant à la prise de focus ou au survol d’un composant d’interface sont-ils contrôlables par l’utilisateur (hors cas particuliers) ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.13"
+    },
+    {
+      "fichier": "critere_10.14.md",
+      "critere_id": "10.14",
+      "critere_titre": "Dans chaque page web, les contenus additionnels apparaissant via les styles CSS uniquement peuvent-ils être rendus visibles au clavier et par tout dispositif de pointage ?",
+      "thematique_id": 10,
+      "thematique": "Présentation de l’information",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#10.14"
+    },
+    {
+      "fichier": "critere_11.1.md",
+      "critere_id": "11.1",
+      "critere_titre": "Chaque champ de formulaire a-t-il une étiquette ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.1"
+    },
+    {
+      "fichier": "critere_11.2.md",
+      "critere_id": "11.2",
+      "critere_titre": "Chaque étiquette associée à un champ de formulaire est-elle pertinente (hors cas particuliers) ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 6,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.2"
+    },
+    {
+      "fichier": "critere_11.3.md",
+      "critere_id": "11.3",
+      "critere_titre": "Dans chaque formulaire, chaque étiquette associée à un champ de formulaire ayant la même fonction et répétée plusieurs fois dans une même page ou dans un ensemble de pages est-elle cohérente ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.3"
+    },
+    {
+      "fichier": "critere_11.4.md",
+      "critere_id": "11.4",
+      "critere_titre": "Dans chaque formulaire, chaque étiquette de champ et son champ associé sont-ils accolés (hors cas particuliers) ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.4"
+    },
+    {
+      "fichier": "critere_11.5.md",
+      "critere_id": "11.5",
+      "critere_titre": "Dans chaque formulaire, les champs de même nature sont-ils regroupés, si nécessaire ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.5"
+    },
+    {
+      "fichier": "critere_11.6.md",
+      "critere_id": "11.6",
+      "critere_titre": "Dans chaque formulaire, chaque regroupement de champs de même nature a-t-il une légende ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.6"
+    },
+    {
+      "fichier": "critere_11.7.md",
+      "critere_id": "11.7",
+      "critere_titre": "Dans chaque formulaire, chaque légende associée à un regroupement de champs de même nature est-elle pertinente ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.7"
+    },
+    {
+      "fichier": "critere_11.8.md",
+      "critere_id": "11.8",
+      "critere_titre": "Dans chaque formulaire, les items de même nature d’une liste de choix sont-ils regroupés de manière pertinente ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.8"
+    },
+    {
+      "fichier": "critere_11.9.md",
+      "critere_id": "11.9",
+      "critere_titre": "Dans chaque formulaire, l’intitulé de chaque bouton est-il pertinent (hors cas particuliers) ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.9"
+    },
+    {
+      "fichier": "critere_11.10.md",
+      "critere_id": "11.10",
+      "critere_titre": "Dans chaque formulaire, le contrôle de saisie est-il utilisé de manière pertinente (hors cas particuliers) ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 7,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.10"
+    },
+    {
+      "fichier": "critere_11.11.md",
+      "critere_id": "11.11",
+      "critere_titre": "Dans chaque formulaire, le contrôle de saisie est-il accompagné, si nécessaire, de suggestions facilitant la correction des erreurs de saisie ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.11"
+    },
+    {
+      "fichier": "critere_11.12.md",
+      "critere_id": "11.12",
+      "critere_titre": "Pour chaque formulaire qui modifie ou supprime des données, ou qui transmet des réponses à un test ou à un examen, ou dont la validation a des conséquences financières ou juridiques, les données saisies peuvent-elles être modifiées, mises à jour ou récupérées par l’utilisateur ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.12"
+    },
+    {
+      "fichier": "critere_11.13.md",
+      "critere_id": "11.13",
+      "critere_titre": "La finalité d’un champ de saisie peut-elle être déduite pour faciliter le remplissage automatique des champs avec les données de l’utilisateur ?",
+      "thematique_id": 11,
+      "thematique": "Formulaires",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#11.13"
+    },
+    {
+      "fichier": "critere_12.1.md",
+      "critere_id": "12.1",
+      "critere_titre": "Chaque ensemble de pages dispose-t-il de deux systèmes de navigation différents, au moins (hors cas particuliers) ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.1"
+    },
+    {
+      "fichier": "critere_12.2.md",
+      "critere_id": "12.2",
+      "critere_titre": "Dans chaque ensemble de pages, le menu et les barres de navigation sont-ils toujours à la même place (hors cas particuliers) ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.2"
+    },
+    {
+      "fichier": "critere_12.3.md",
+      "critere_id": "12.3",
+      "critere_titre": "La page « plan du site » est-elle pertinente ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.3"
+    },
+    {
+      "fichier": "critere_12.4.md",
+      "critere_id": "12.4",
+      "critere_titre": "Dans chaque ensemble de pages, la page « plan du site » est-elle accessible à partir d’une fonctionnalité identique ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.4"
+    },
+    {
+      "fichier": "critere_12.5.md",
+      "critere_id": "12.5",
+      "critere_titre": "Dans chaque ensemble de pages, le moteur de recherche est-il atteignable de manière identique ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.5"
+    },
+    {
+      "fichier": "critere_12.6.md",
+      "critere_id": "12.6",
+      "critere_titre": "Les zones de regroupement de contenus présentes dans plusieurs pages web (zones d’en-tête, de navigation principale, de contenu principal, de pied de page et de moteur de recherche) peuvent-elles être atteintes ou évitées ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.6"
+    },
+    {
+      "fichier": "critere_12.7.md",
+      "critere_id": "12.7",
+      "critere_titre": "Dans chaque page web, un lien d’évitement ou d’accès rapide à la zone de contenu principal est-il présent (hors cas particuliers) ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.7"
+    },
+    {
+      "fichier": "critere_12.8.md",
+      "critere_id": "12.8",
+      "critere_titre": "Dans chaque page web, l’ordre de tabulation est-il cohérent ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.8"
+    },
+    {
+      "fichier": "critere_12.9.md",
+      "critere_id": "12.9",
+      "critere_titre": "Dans chaque page web, la navigation ne doit pas contenir de piège au clavier. Cette règle est-elle respectée ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.9"
+    },
+    {
+      "fichier": "critere_12.10.md",
+      "critere_id": "12.10",
+      "critere_titre": "Dans chaque page web, les raccourcis clavier n’utilisant qu’une seule touche (lettre minuscule ou majuscule, ponctuation, chiffre ou symbole) sont-ils contrôlables par l’utilisateur ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.10"
+    },
+    {
+      "fichier": "critere_12.11.md",
+      "critere_id": "12.11",
+      "critere_titre": "Dans chaque page web, les contenus additionnels apparaissant au survol, à la prise de focus ou à l’activation d’un composant d’interface sont-ils si nécessaire atteignables au clavier ?",
+      "thematique_id": 12,
+      "thematique": "Navigation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#12.11"
+    },
+    {
+      "fichier": "critere_13.1.md",
+      "critere_id": "13.1",
+      "critere_titre": "Pour chaque page web, l’utilisateur a-t-il le contrôle de chaque limite de temps modifiant le contenu (hors cas particuliers) ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 4,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.1"
+    },
+    {
+      "fichier": "critere_13.2.md",
+      "critere_id": "13.2",
+      "critere_titre": "Dans chaque page web, l’ouverture d’une nouvelle fenêtre ne doit pas être déclenchée sans action de l’utilisateur. Cette règle est-elle respectée ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.2"
+    },
+    {
+      "fichier": "critere_13.3.md",
+      "critere_id": "13.3",
+      "critere_titre": "Dans chaque page web, chaque document bureautique en téléchargement possède-t-il, si nécessaire, une version accessible (hors cas particuliers) ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.3"
+    },
+    {
+      "fichier": "critere_13.4.md",
+      "critere_id": "13.4",
+      "critere_titre": "Pour chaque document bureautique ayant une version accessible, cette version offre-t-elle la même information ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.4"
+    },
+    {
+      "fichier": "critere_13.5.md",
+      "critere_id": "13.5",
+      "critere_titre": "Dans chaque page web, chaque contenu cryptique (art ASCII, émoticône, syntaxe cryptique) a-t-il une alternative ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.5"
+    },
+    {
+      "fichier": "critere_13.6.md",
+      "critere_id": "13.6",
+      "critere_titre": "Dans chaque page web, pour chaque contenu cryptique (art ASCII, émoticône, syntaxe cryptique) ayant une alternative, cette alternative est-elle pertinente ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.6"
+    },
+    {
+      "fichier": "critere_13.7.md",
+      "critere_id": "13.7",
+      "critere_titre": "Dans chaque page web, les changements brusques de luminosité ou les effets de flash sont-ils correctement utilisés ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.7"
+    },
+    {
+      "fichier": "critere_13.8.md",
+      "critere_id": "13.8",
+      "critere_titre": "Dans chaque page web, chaque contenu en mouvement ou clignotant est-il contrôlable par l’utilisateur ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.8"
+    },
+    {
+      "fichier": "critere_13.9.md",
+      "critere_id": "13.9",
+      "critere_titre": "Dans chaque page web, le contenu proposé est-il consultable quelle que soit l’orientation de l’écran (portrait ou paysage) (hors cas particuliers) ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.9"
+    },
+    {
+      "fichier": "critere_13.10.md",
+      "critere_id": "13.10",
+      "critere_titre": "Dans chaque page web, les fonctionnalités utilisables ou disponibles au moyen d’un geste complexe peuvent-elles être également disponibles au moyen d’un geste simple (hors cas particuliers) ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 2,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.10"
+    },
+    {
+      "fichier": "critere_13.11.md",
+      "critere_id": "13.11",
+      "critere_titre": "Dans chaque page web, les actions déclenchées au moyen d’un dispositif de pointage sur un point unique de l’écran peuvent-elles faire l’objet d’une annulation (hors cas particuliers) ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 1,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.11"
+    },
+    {
+      "fichier": "critere_13.12.md",
+      "critere_id": "13.12",
+      "critere_titre": "Dans chaque page web, les fonctionnalités qui impliquent un mouvement de l’appareil ou vers l’appareil peuvent-elles être satisfaites de manière alternative (hors cas particuliers) ?",
+      "thematique_id": 13,
+      "thematique": "Consultation",
+      "nb_tests": 3,
+      "url": "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.12"
+    }
+  ]
+}

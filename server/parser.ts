@@ -183,6 +183,13 @@ function normalize(text: string): string {
 }
 
 /**
+ * Détecte le premier point/!/?  immédiatement suivi d'une majuscule (sans espace).
+ * Utilisé pour séparer le constat de la solution dans une même ligne.
+ * Ex: "...nom accessible.Ajouter..." → split après le premier "."
+ */
+const SOLUTION_SPLIT_PATTERN = /[.!?][A-ZÀÂÄÉÈÊËÎÏÔÙÛÜÇŒÆ]/;
+
+/**
  * Parse le contenu texte du document pour extraire les constats (section 3)
  */
 function parseTextContent(text: string, diagnostics: ParserDiagnostic[]): ExtractedFinding[] {
@@ -347,6 +354,21 @@ function extractFindingsForCriterion(
       const findingText = impactMatch[3]?.trim() || "";
 
       if (findingText) {
+        // Séparer constat et solution : point immédiatement suivi d'une majuscule = début solution
+        const splitMatch = findingText.match(SOLUTION_SPLIT_PATTERN);
+
+        let cleanFinding: string;
+        let cleanSolution: string | undefined;
+
+        if (splitMatch && splitMatch.index !== undefined) {
+          const splitIdx = splitMatch.index + 1; // après la ponctuation
+          cleanFinding = findingText.substring(0, splitIdx).trim();
+          cleanSolution = findingText.substring(splitIdx).trim() || undefined;
+        } else {
+          cleanFinding = findingText.trim();
+          cleanSolution = undefined;
+        }
+
         findings.push({
           thematicNumber,
           thematicName,
@@ -356,8 +378,8 @@ function extractFindingsForCriterion(
           location: currentLocation || "Non spécifié",
           contentType: contentType || undefined,
           userProblem: userProblem || undefined,
-          finding: findingText,
-          solution: undefined,
+          finding: cleanFinding,
+          solution: cleanSolution,
         });
       } else {
         skipped++;

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📘 Rapport — RGAA Constat Extractor</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --color-bg: #0d1117;
+      --color-surface: #161b22;
+      --color-surface-2: #21262d;
+      --color-border: #30363d;
+      --color-text: #e6edf3;
+      --color-text-muted: #8b949e;
+      --color-accent: #58a6ff;
+      --color-accent-2: #7ee787;
+      --color-warning: #d29922;
+      --color-danger: #f85149;
+      --color-purple: #bc8cff;
+      --color-orange: #ffa657;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .report-header {
+      text-align: center;
+      padding: 60px 40px;
+      background: linear-gradient(135deg, #1a2540 0%, #0d1117 50%, #1a1a2e 100%);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      margin-bottom: 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(88,166,255,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .report-header .badge {
+      display: inline-block;
+      background: rgba(88,166,255,0.15);
+      border: 1px solid rgba(88,166,255,0.3);
+      color: var(--color-accent);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .report-header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #58a6ff, #7ee787, #bc8cff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    .report-header p {
+      color: var(--color-text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* ── Sections ── */
+    section { margin-bottom: 56px; }
+
+    .module-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 32px 36px;
+      margin-bottom: 32px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .module-card:hover { border-color: rgba(88,166,255,0.4); }
+
+    .module-number {
+      position: absolute;
+      top: -16px;
+      left: 28px;
+      background: linear-gradient(135deg, #58a6ff, #7ee787);
+      color: #0d1117;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 40px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .emoji { font-size: 1.4rem; }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--color-accent);
+      margin: 24px 0 10px;
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      margin: 18px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.82rem;
+    }
+
+    p { margin-bottom: 14px; color: var(--color-text); }
+
+    /* ── Alerts ── */
+    .alert {
+      border-left: 4px solid;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 14px 18px;
+      margin: 18px 0;
+      font-size: 0.93rem;
+    }
+    .alert-title {
+      font-weight: 700;
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .alert.note { border-color: var(--color-accent); background: rgba(88,166,255,0.08); }
+    .alert.note .alert-title { color: var(--color-accent); }
+    .alert.tip { border-color: var(--color-accent-2); background: rgba(126,231,135,0.08); }
+    .alert.tip .alert-title { color: var(--color-accent-2); }
+    .alert.important { border-color: var(--color-purple); background: rgba(188,140,255,0.08); }
+    .alert.important .alert-title { color: var(--color-purple); }
+    .alert.warning { border-color: var(--color-warning); background: rgba(210,153,34,0.08); }
+    .alert.warning .alert-title { color: var(--color-warning); }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin: 20px 0; border-radius: var(--radius); border: 1px solid var(--color-border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    thead tr { background: var(--color-surface-2); }
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--color-accent);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--color-border);
+    }
+    td {
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+      color: var(--color-text);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.025); }
+
+    /* ── Code blocks ── */
+    pre {
+      background: #0d1117;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      overflow-x: auto;
+      margin: 18px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #c9d1d9;
+    }
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(110,118,129,0.15);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.88em;
+      color: var(--color-orange);
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+
+    /* ── Mermaid ── */
+    .mermaid {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 24px;
+      margin: 12px 0 16px;
+    }
+    li { margin-bottom: 6px; color: var(--color-text); }
+    li::marker { color: var(--color-accent); }
+
+    /* ── Flow steps ── */
+    .flow-container {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .flow-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+    }
+    .flow-step:last-child { border-bottom: none; }
+    .flow-step:hover { background: rgba(255,255,255,0.025); }
+    .flow-step-number {
+      background: linear-gradient(135deg, #58a6ff, #7ee787);
+      color: #0d1117;
+      font-weight: 700;
+      font-size: 0.8rem;
+      min-width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .flow-step-text strong { color: var(--color-accent); }
+    .flow-step-file {
+      font-size: 0.8rem;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── Divider ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--color-border);
+      margin: 40px 0;
+    }
+
+    /* ── Glossary ── */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .glossary-item {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .glossary-term {
+      font-weight: 600;
+      color: var(--color-accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem;
+      margin-bottom: 4px;
+    }
+    .glossary-def {
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    /* ── Tags / badges ── */
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 12px;
+      margin: 2px 2px;
+    }
+    .tag-blue { background: rgba(88,166,255,0.15); color: #58a6ff; border: 1px solid rgba(88,166,255,0.3); }
+    .tag-green { background: rgba(126,231,135,0.15); color: #7ee787; border: 1px solid rgba(126,231,135,0.3); }
+    .tag-orange { background: rgba(255,166,87,0.15); color: #ffa657; border: 1px solid rgba(255,166,87,0.3); }
+    .tag-red { background: rgba(248,81,73,0.15); color: #f85149; border: 1px solid rgba(248,81,73,0.3); }
+    .tag-purple { background: rgba(188,140,255,0.15); color: #bc8cff; border: 1px solid rgba(188,140,255,0.3); }
+
+    /* ── TOC ── */
+    .toc {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+    .toc h3 { margin-top: 0; color: var(--color-text-muted); font-size: 0.85rem; }
+    .toc ol { margin: 10px 0 0; }
+    .toc li { margin-bottom: 4px; }
+    .toc a { color: var(--color-accent); text-decoration: none; font-size: 0.93rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Tabs UI box ── */
+    .tabs-preview {
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    .tabs-bar {
+      display: flex;
+      background: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: 0 12px;
+    }
+    .tab-item {
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      cursor: default;
+      border-bottom: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tab-item.active {
+      color: var(--color-accent);
+      border-bottom-color: var(--color-accent);
+      font-weight: 600;
+    }
+    .tabs-content { padding: 20px; font-size: 0.88rem; color: var(--color-text-muted); }
+
+    @media (max-width: 640px) {
+      .report-header h1 { font-size: 1.8rem; }
+      .module-card { padding: 24px 20px; }
+      h2 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="report-header">
+    <div class="badge">📘 Rapport Technique v2.0</div>
+    <h1>RGAA Constat Extractor</h1>
+    <p>Comprendre le projet module par module</p>
+  </div>
+
+  <!-- INTRO -->
+  <div class="alert note">
+    <div class="alert-title">ℹ️ Note</div>
+    Chaque terme technique est expliqué simplement. Un <strong>glossaire complet</strong> se trouve à la fin du document.
+  </div>
+
+  <!-- TABLE DES MATIÈRES -->
+  <div class="toc">
+    <h3>📑 TABLE DES MATIÈRES</h3>
+    <ol>
+      <li><a href="#intro">C'est quoi ce projet ?</a></li>
+      <li><a href="#archi">Architecture générale</a></li>
+      <li><a href="#fil-rouge">Le fil rouge — parcours d'un rapport</a></li>
+      <li><a href="#module1">Module 1 — Le Serveur (Chef d'Orchestre)</a></li>
+      <li><a href="#module2">Module 2 — Le Parser (Lecteur Word)</a></li>
+      <li><a href="#module3">Module 3 — La Base de Données</a></li>
+      <li><a href="#module4">Module 4 — L'API tRPC (Communication)</a></li>
+      <li><a href="#module5">Module 5 — Le Hub IA (Intelligence Artificielle)</a></li>
+      <li><a href="#module6">Module 6 — Le Serveur MCP (IA Externe)</a></li>
+      <li><a href="#module7">Module 7 — Le Frontend (Interface Utilisateur)</a></li>
+      <li><a href="#module8">Module 8 — Scripts de Maintenance</a></li>
+      <li><a href="#glossaire">Glossaire</a></li>
+    </ol>
+  </div>
+
+  <!-- INTRO -->
+  <section id="intro">
+    <h2><span class="emoji">🎯</span> En une phrase : c'est quoi ce projet ?</h2>
+    <p><strong>RGAA Constat Extractor</strong> est un outil web qui aide les professionnels de l'accessibilité numérique à <strong>automatiser une tâche répétitive</strong> : extraire les erreurs d'accessibilité depuis leurs rapports Word, les organiser, les analyser, et les interroger via un assistant intelligent.</p>
+    <div class="alert note">
+      <div class="alert-title">ℹ️ Le RGAA</div>
+      Le <strong>RGAA</strong> (Référentiel Général d'Amélioration de l'Accessibilité) est le guide officiel français qui définit les règles pour rendre les sites web accessibles à tous, y compris aux personnes handicapées (malvoyants, non-voyants, etc.).
+    </div>
+
+    <h3>L'analogie parfaite</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dans une agence de voyage</th><th>Dans l'application</th></tr></thead>
+        <tbody>
+          <tr><td>👤 Le client</td><td>L'utilisateur dans son navigateur</td></tr>
+          <tr><td>🧾 Le formulaire de réservation</td><td>L'interface web (React)</td></tr>
+          <tr><td>📞 La standardiste</td><td>Le serveur (Node.js / Express)</td></tr>
+          <tr><td>🗄️ Le grand classeur</td><td>La base de données (MySQL)</td></tr>
+          <tr><td>🧠 L'expert conseil</td><td>Le moteur IA (RAG + LLM)</td></tr>
+          <tr><td>📚 La bibliothèque interne</td><td>ChromaDB (base vectorielle)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="archi">
+    <h2><span class="emoji">🏗️</span> Architecture générale</h2>
+    <div class="alert important">
+      <div class="alert-title">⚡ Important</div>
+      Le projet se divise en <strong>deux grandes parties</strong> qui travaillent ensemble :<br>
+      • <strong>Le Frontend</strong> (ce que l'utilisateur voit) — dossier <code>client/</code><br>
+      • <strong>Le Backend</strong> (le moteur invisible) — dossier <code>server/</code>
+    </div>
+    <div class="mermaid">
+graph TD
+    A[👤 Utilisateur\nNavigateur] -->|Upload rapport Word| B[🌐 Interface Web\nReact]
+    B -->|Requêtes tRPC| C[🖥️ Serveur Node.js\nExpress]
+    C -->|Lit le fichier| D[📄 Parser Word\nparser.ts]
+    C -->|Lit et écrit| E[(🗄️ MySQL\nBase de données)]
+    C -->|Questions IA| F[🧠 Hub IA\nRAG Engine]
+    F -->|Recherche sémantique| G[(📚 ChromaDB\nBase vectorielle)]
+    F -->|Génère réponse| H[🤖 LLM\nOpenAI ou Claude]
+    D -->|Constats extraits| E
+    G -->|Sources pertinentes| F
+
+    style A fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style B fill:#21262d,stroke:#7ee787,color:#e6edf3
+    style C fill:#21262d,stroke:#bc8cff,color:#e6edf3
+    style D fill:#21262d,stroke:#ffa657,color:#e6edf3
+    style E fill:#21262d,stroke:#f85149,color:#e6edf3
+    style F fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style G fill:#21262d,stroke:#7ee787,color:#e6edf3
+    style H fill:#21262d,stroke:#d29922,color:#e6edf3
+    </div>
+  </section>
+
+  <!-- FIL ROUGE -->
+  <section id="fil-rouge">
+    <h2><span class="emoji">🔄</span> Le fil rouge — parcours complet d'un rapport</h2>
+    <p>Voici ce qui se passe <strong>de bout en bout</strong> quand vous utilisez l'application. Gardez ce flux en tête pendant toute la lecture.</p>
+    <div class="flow-container">
+      <div class="flow-step"><div class="flow-step-number">1</div><div><div><strong>L'utilisateur glisse un fichier Word</strong></div><div class="flow-step-file">→ Module 7 : Interface Upload (React)</div></div></div>
+      <div class="flow-step"><div class="flow-step-number">2</div><div><div><strong>Le serveur reçoit et stocke le fichier</strong></div><div class="flow-step-file">→ Module 1 : Serveur Express + Stockage</div></div></div>
+      <div class="flow-step"><div class="flow-step-number">3</div><div><div><strong>Le fichier Word est lu et décortiqué</strong></div><div class="flow-step-file">→ Module 2 : parser.ts</div></div></div>
+      <div class="flow-step"><div class="flow-step-number">4</div><div><div><strong>Les erreurs extraites sont enregistrées</strong></div><div class="flow-step-file">→ Module 3 : MySQL + repositories/</div></div></div>
+      <div class="flow-step"><div class="flow-step-number">5</div><div><div><strong>Les erreurs sont aussi copiées pour l'IA</strong></div><div class="flow-step-file">→ Module 5 : Hub IA → ChromaDB</div></div></div>
+      <div class="flow-step"><div class="flow-step-number">6</div><div><div><strong>L'utilisateur consulte, filtre, analyse</strong></div><div class="flow-step-file">→ Module 7 : Bibliothèque / Stats / Évolution</div></div></div>
+      <div class="flow-step"><div class="flow-step-number">7</div><div><div><strong>L'utilisateur pose une question à l'IA</strong></div><div class="flow-step-file">→ Module 5 : RAG Engine + LLM</div></div></div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- MODULE 1 -->
+  <section id="module1">
+    <div class="module-card">
+      <div class="module-number">Module 1</div>
+      <h2 style="margin-top:12px"><span class="emoji">🎻</span> Le Chef d'Orchestre (Le Serveur)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">server/_core/index.ts &nbsp;|&nbsp; package.json &nbsp;|&nbsp; .env</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Qu'est-ce qu'un serveur ?</div>
+        Un <strong>serveur</strong>, c'est comme un <strong>restaurant</strong>. Il attend que des clients (votre navigateur) passent des commandes, les traite, et renvoie le résultat. Il tourne 24h/24, invisible mais indispensable.
+      </div>
+
+      <h3>Ce que fait ce module au démarrage</h3>
+      <ul>
+        <li><strong>🏪 Ouvre le restaurant</strong> — Express.js démarre et écoute sur le port 3000</li>
+        <li><strong>📋 Charge le menu RGAA</strong> — Les 106 critères d'accessibilité sont chargés en mémoire</li>
+        <li><strong>🧠 Vérifie le stock IA</strong> — Si ChromaDB est vide, il la remplit automatiquement en arrière-plan</li>
+        <li><strong>🗺️ Configure les routes</strong> — Définit les URLs acceptées</li>
+        <li><strong>🔍 Cherche un port disponible</strong> — Si 3000 est pris, il essaie 3001, 3002…</li>
+      </ul>
+
+      <h3>Les commandes pour lancer le projet</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Commande</th><th>Ce que ça fait</th><th>Quand l'utiliser</th></tr></thead>
+          <tbody>
+            <tr><td><code>pnpm install</code></td><td>Installe tous les outils</td><td>Une seule fois au début</td></tr>
+            <tr><td><code>pnpm db:push</code></td><td>Crée les tables MySQL</td><td>Après une mise à jour</td></tr>
+            <tr><td><code>pnpm dev</code></td><td>Lance le serveur en dev</td><td>Tous les jours</td></tr>
+            <tr><td><code>pnpm mcp</code></td><td>Lance l'interface Claude</td><td>Pour l'IA avancée</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 2 -->
+  <section id="module2">
+    <div class="module-card">
+      <div class="module-number">Module 2</div>
+      <h2 style="margin-top:12px"><span class="emoji">📖</span> Le Lecteur de Documents Word (Parser)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">server/parser.ts</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Qu'est-ce qu'un parser ?</div>
+        Un <strong>parser</strong>, c'est comme un <strong>assistant qui lit un rapport papier à votre place</strong> et le retranscrit dans un tableau Excel structuré. Il comprend la mise en forme et sait où chercher les informations.
+      </div>
+
+      <h3>Les 3 étapes du parsing</h3>
+      <div class="flow-container">
+        <div class="flow-step"><div class="flow-step-number">1</div><div><div><strong>Convertir le Word en texte lisible</strong></div><div class="flow-step-file">mammoth.js → texte brut + HTML</div></div></div>
+        <div class="flow-step"><div class="flow-step-number">2</div><div><div><strong>Trouver la bonne section</strong></div><div class="flow-step-file">Cherche "Descriptions des erreurs d'accessibilité" (dernière occurrence)</div></div></div>
+        <div class="flow-step"><div class="flow-step-number">3</div><div><div><strong>Extraire chaque erreur ligne par ligne</strong></div><div class="flow-step-file">Détecte les marqueurs "Impact : Bloquant/Majeur/Mineur"</div></div></div>
+      </div>
+
+      <h3>Exemple concret</h3>
+      <pre>Ligne dans le Word :
+"Page d'accueil – Impact : Bloquant L'image ne possède pas d'alternative textuelle"
+
+↓ Constat extrait :
+  Critère     : 1.2
+  Localisation: Page d'accueil
+  Impact      : Bloquant  🔴
+  Texte       : "L'image ne possède pas d'alternative textuelle"</pre>
+
+      <h3>Données extraites pour chaque erreur</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Exemple</th></tr></thead>
+          <tbody>
+            <tr><td>Numéro de critère</td><td><code>1.2</code></td></tr>
+            <tr><td>Thématique</td><td>Images</td></tr>
+            <tr><td>Impact</td><td><span class="tag tag-red">Bloquant</span> <span class="tag tag-orange">Majeur</span> <span class="tag tag-green">Mineur</span></td></tr>
+            <tr><td>Localisation</td><td>Page d'accueil</td></tr>
+            <tr><td>Problème utilisateur</td><td>Impossible pour un non-voyant…</td></tr>
+            <tr><td>Texte du constat</td><td>L'image ne possède pas d'alternative…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert tip">
+        <div class="alert-title">💡 Tip</div>
+        Si un rapport ne s'importe pas correctement, le parser génère des <strong>messages de diagnostic</strong> qui expliquent exactement ce qui n'a pas été trouvé (section manquante, format inattendu, etc.).
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 3 -->
+  <section id="module3">
+    <div class="module-card">
+      <div class="module-number">Module 3</div>
+      <h2 style="margin-top:12px"><span class="emoji">🗄️</span> L'Armoire de Rangement (Base de Données)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">server/repositories/ &nbsp;|&nbsp; drizzle/</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Qu'est-ce qu'une base de données ?</div>
+        Imaginez une <strong>armoire avec des tiroirs bien étiquetés</strong>. Chaque tiroir contient un type d'information précis. Vous pouvez y ajouter des fiches, en chercher, les modifier ou les supprimer à tout moment.
+      </div>
+
+      <h3>Les "tiroirs" du projet (tables MySQL)</h3>
+      <pre>📦 Base de données : rgaa_extractor
+│
+├── 👤 users              → Qui est connecté ?
+├── 📄 audit_reports      → Quels rapports ont été importés ?
+├── 🔍 findings           → Quelles erreurs ont été trouvées ?
+├── 🏷️ thematics          → Les 13 thématiques RGAA
+├── ✅ criteria           → Les 106 critères RGAA
+├── 📋 finding_templates  → Bibliothèque de constats modèles
+└── ⚙️ settings           → Configuration de l'application</pre>
+
+      <h3>Les 7 "bibliothécaires" (repositories)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fichier</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td><code>connection.ts</code></td><td>Ouvre la connexion vers MySQL</td></tr>
+            <tr><td><code>userRepository.ts</code></td><td>Gère les utilisateurs</td></tr>
+            <tr><td><code>referentialRepository.ts</code></td><td>Lit les critères et thématiques RGAA</td></tr>
+            <tr><td><code>reportRepository.ts</code></td><td>Gère les rapports (créer, lire, supprimer)</td></tr>
+            <tr><td><code>findingRepository.ts</code></td><td>Gère les constats (filtres, stats, recherche)</td></tr>
+            <tr><td><code>templateRepository.ts</code></td><td>Gère la bibliothèque de constats modèles</td></tr>
+            <tr><td><code>settingsRepository.ts</code></td><td>Gère la configuration persistée</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 4 -->
+  <section id="module4">
+    <div class="module-card">
+      <div class="module-number">Module 4</div>
+      <h2 style="margin-top:12px"><span class="emoji">📞</span> Le Téléphone Entre Client et Serveur (API tRPC)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">server/routers/</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Qu'est-ce qu'une API ?</div>
+        Une <strong>API</strong>, c'est comme le <strong>menu d'un restaurant</strong>. Elle liste tout ce que le client (navigateur) peut demander au serveur. <strong>tRPC</strong> est une façon moderne de créer cette communication avec une sécurité maximale.
+      </div>
+
+      <h3>Les 6 groupes de fonctions</h3>
+      <pre>appRouter
+├── auth            → "Qui suis-je ?" / "Déconnexion"
+├── audit           → Gérer les rapports d'audit
+├── criteria        → Consulter le référentiel RGAA
+├── findingTemplates → Bibliothèque de constats
+├── hub             → Poser des questions à l'IA
+└── settings        → Configurer l'application</pre>
+
+      <h3>Fonctions principales du router <code>audit</code></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Fonction</th><th>Type</th><th>Ce qu'elle fait</th></tr></thead>
+          <tbody>
+            <tr><td><code>uploadReport</code></td><td><span class="tag tag-orange">Écriture</span></td><td>Reçoit et stocke le fichier Word</td></tr>
+            <tr><td><code>processReport</code></td><td><span class="tag tag-orange">Écriture</span></td><td>Lance le parsing + extraction des constats</td></tr>
+            <tr><td><code>getUserReports</code></td><td><span class="tag tag-blue">Lecture</span></td><td>Liste tous les rapports de l'utilisateur</td></tr>
+            <tr><td><code>getEnrichedFindings</code></td><td><span class="tag tag-blue">Lecture</span></td><td>Récupère les constats avec filtres</td></tr>
+            <tr><td><code>deleteReport</code></td><td><span class="tag tag-red">Suppression</span></td><td>Supprime un rapport et ses constats</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="alert warning">
+        <div class="alert-title">⚠️ Warning</div>
+        Certaines fonctions sont <strong>protégées</strong> (nécessitent d'être connecté). Le système vérifie automatiquement une session sécurisée avant chaque action sensible.
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 5 -->
+  <section id="module5">
+    <div class="module-card">
+      <div class="module-number">Module 5</div>
+      <h2 style="margin-top:12px"><span class="emoji">🤖</span> L'Assistant Intelligent (Le Hub IA)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">server/hub/</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Comment fonctionne le RAG ?</div>
+        Imaginez un <strong>expert consultant</strong> qui, avant de vous répondre, consulte d'abord sa bibliothèque personnelle pour trouver les cas similaires. C'est exactement ce que fait le système <strong>RAG</strong> (Retrieval-Augmented Generation).
+      </div>
+
+      <h3>Le flux RAG en 3 étapes</h3>
+      <div class="mermaid">
+graph LR
+    A[❓ Question] --> B[🔢 Vectorisation\nembed]
+    B --> C[🔍 Recherche\nChromaDB]
+    C --> D[📊 Scoring\net filtrage]
+    D --> E[📝 Construction\ndu prompt enrichi]
+    E --> F[🤖 LLM\nClaude / OpenAI]
+    F --> G[✅ Réponse\nplus sources]
+
+    style A fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style B fill:#21262d,stroke:#7ee787,color:#e6edf3
+    style C fill:#21262d,stroke:#bc8cff,color:#e6edf3
+    style D fill:#21262d,stroke:#ffa657,color:#e6edf3
+    style E fill:#21262d,stroke:#58a6ff,color:#e6edf3
+    style F fill:#21262d,stroke:#d29922,color:#e6edf3
+    style G fill:#21262d,stroke:#7ee787,color:#e6edf3
+      </div>
+
+      <h3>Les 3 modes de fonctionnement</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Mode</th><th>Situation</th><th>Qualité</th></tr></thead>
+          <tbody>
+            <tr><td><span class="tag tag-green">rag</span></td><td>ChromaDB disponible avec données</td><td>⭐⭐⭐ Maximale</td></tr>
+            <tr><td><span class="tag tag-orange">rag-cold-start</span></td><td>ChromaDB vide (pas encore indexé)</td><td>⭐⭐ Bonne</td></tr>
+            <tr><td><span class="tag tag-red">degraded</span></td><td>ChromaDB hors ligne</td><td>⭐ Basique</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Les 3 "rayons" de la bibliothèque (Collections ChromaDB)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Collection</th><th>Contenu</th><th>Priorité</th></tr></thead>
+          <tbody>
+            <tr><td><code>rgaa_referential</code></td><td>Les 106 critères RGAA officiels</td><td>🔴 Haute</td></tr>
+            <tr><td><code>rgaa_findings</code></td><td>Tous les constats des rapports importés</td><td>🟡 Moyenne</td></tr>
+            <tr><td><code>rgaa_code</code></td><td>Exemples WAI-ARIA et patterns de code</td><td>🟢 Normale</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert tip">
+        <div class="alert-title">💡 Tip</div>
+        Le scraping (collecte de connaissances) se déclenche <strong>automatiquement</strong> au démarrage si ChromaDB est vide. Il peut aussi être lancé manuellement depuis la page Paramètres.
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 6 -->
+  <section id="module6">
+    <div class="module-card">
+      <div class="module-number">Module 6</div>
+      <h2 style="margin-top:12px"><span class="emoji">🔗</span> La Connexion avec les IA Externes (MCP)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">server/mcp.ts</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Qu'est-ce que le MCP ?</div>
+        <strong>MCP</strong> (Model Context Protocol) est comme un <strong>port USB universel</strong> pour les IA. Il permet à un assistant comme Claude Desktop de se brancher directement à l'application et d'utiliser toutes ses fonctionnalités.
+      </div>
+
+      <h3>Ce que Claude peut faire grâce au MCP</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Outil</th><th>Ce que Claude peut faire</th></tr></thead>
+          <tbody>
+            <tr><td><code>ask_accessibility</code></td><td>Poser une question sur l'accessibilité</td></tr>
+            <tr><td><code>analyze_code</code></td><td>Analyser du HTML et détecter des problèmes</td></tr>
+            <tr><td><code>suggest_fix</code></td><td>Demander une correction pour un problème</td></tr>
+            <tr><td><code>get_report_findings</code></td><td>Consulter les constats d'un rapport</td></tr>
+            <tr><td><code>search_findings</code></td><td>Chercher des constats avec des filtres</td></tr>
+            <tr><td><code>validate_finding</code></td><td>Valider et indexer un constat dans la base IA</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><strong>Comment l'activer :</strong> <code>pnpm mcp</code> — s'utilise avec Claude Desktop ou Claude Code.</p>
+    </div>
+  </section>
+
+  <!-- MODULE 7 -->
+  <section id="module7">
+    <div class="module-card">
+      <div class="module-number">Module 7</div>
+      <h2 style="margin-top:12px"><span class="emoji">🖥️</span> Ce que Voit l'Utilisateur (Le Frontend)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">client/src/</p>
+
+      <div class="alert note">
+        <div class="alert-title">ℹ️ Qu'est-ce que le frontend ?</div>
+        Le <strong>frontend</strong>, c'est tout ce que vous voyez dans votre navigateur : les boutons, les tableaux, les graphiques. Construit avec <strong>React 19</strong> et <strong>TailwindCSS</strong>.
+      </div>
+
+      <h3>Les 6 onglets de l'application</h3>
+      <div class="tabs-preview">
+        <div class="tabs-bar">
+          <div class="tab-item active">📤 Upload</div>
+          <div class="tab-item">📄 Rapports</div>
+          <div class="tab-item">📚 Bibliothèque</div>
+          <div class="tab-item">📊 Stats</div>
+          <div class="tab-item">📈 Évolution</div>
+          <div class="tab-item">🤖 Chat Expert</div>
+        </div>
+        <div class="tabs-content">Glisser-déposer un fichier Word pour l'importer dans l'application → Le serveur le reçoit et le prépare au traitement.</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Onglet</th><th>Ce qu'on peut faire</th></tr></thead>
+          <tbody>
+            <tr><td>📤 <strong>Upload</strong></td><td>Glisser-déposer un fichier Word pour l'importer</td></tr>
+            <tr><td>📄 <strong>Rapports</strong></td><td>Voir la liste des rapports, les traiter, les supprimer</td></tr>
+            <tr><td>📚 <strong>Bibliothèque</strong></td><td>Parcourir et filtrer tous les constats extraits</td></tr>
+            <tr><td>📊 <strong>Stats</strong></td><td>Visualiser des graphiques par thématique et impact</td></tr>
+            <tr><td>📈 <strong>Évolution</strong></td><td>Suivre les progrès au fil des audits</td></tr>
+            <tr><td>🤖 <strong>Chat Expert</strong></td><td>Poser des questions à l'assistant IA</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULE 8 -->
+  <section id="module8">
+    <div class="module-card">
+      <div class="module-number">Module 8</div>
+      <h2 style="margin-top:12px"><span class="emoji">🔧</span> Outils de Maintenance (Scripts)</h2>
+      <p style="color:var(--color-text-muted); font-family:monospace; font-size:0.85rem;">scripts/</p>
+      <div class="alert warning">
+        <div class="alert-title">⚠️ Warning</div>
+        Ces scripts sont des <strong>outils de secours</strong> réservés aux développeurs. Ils ne sont jamais utilisés par l'utilisateur final.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Script</th><th>Utilité</th></tr></thead>
+          <tbody>
+            <tr><td><code>create-db.ts</code></td><td>Crée la base de données MySQL si elle n'existe pas</td></tr>
+            <tr><td><code>inspect_db.ts</code></td><td>Inspecte l'état de la base de données</td></tr>
+            <tr><td><code>debug_rag_content.ts</code></td><td>Vérifie ce qui est stocké dans ChromaDB</td></tr>
+            <tr><td><code>dump_chroma.ts</code></td><td>Exporte le contenu de ChromaDB</td></tr>
+            <tr><td><code>repair_rgaa.ts</code></td><td>Répare le référentiel RGAA en cas de problème</td></tr>
+            <tr><td><code>test_perfection.ts</code></td><td>Teste la qualité des réponses du moteur IA</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- GLOSSAIRE -->
+  <section id="glossaire">
+    <h2><span class="emoji">📖</span> Glossaire — Les termes techniques expliqués</h2>
+    <p>Si vous rencontrez un mot que vous ne connaissez pas, cherchez-le ici :</p>
+    <div class="glossary-grid">
+      <div class="glossary-item"><div class="glossary-term">API</div><div class="glossary-def">Le "menu" qui liste ce qu'un serveur peut faire pour le client</div></div>
+      <div class="glossary-item"><div class="glossary-term">Backend</div><div class="glossary-def">La partie invisible de l'application (le serveur)</div></div>
+      <div class="glossary-item"><div class="glossary-term">Base de données</div><div class="glossary-def">Système de rangement structuré pour stocker des informations durablement</div></div>
+      <div class="glossary-item"><div class="glossary-term">ChromaDB</div><div class="glossary-def">Base de données spéciale qui comprend le sens des textes (vectorielle)</div></div>
+      <div class="glossary-item"><div class="glossary-term">DOCX</div><div class="glossary-def">Format de fichier des documents Microsoft Word</div></div>
+      <div class="glossary-item"><div class="glossary-term">Drizzle ORM</div><div class="glossary-def">Outil pour parler à MySQL en TypeScript plutôt qu'en SQL brut</div></div>
+      <div class="glossary-item"><div class="glossary-term">Express.js</div><div class="glossary-def">Framework qui crée le serveur web en Node.js</div></div>
+      <div class="glossary-item"><div class="glossary-term">Frontend</div><div class="glossary-def">La partie visible de l'application dans le navigateur</div></div>
+      <div class="glossary-item"><div class="glossary-term">LLM</div><div class="glossary-def">Modèle de langage : l'IA qui génère du texte (ChatGPT, Claude…)</div></div>
+      <div class="glossary-item"><div class="glossary-term">MCP</div><div class="glossary-def">Protocole qui permet aux IA de se brancher à des applications</div></div>
+      <div class="glossary-item"><div class="glossary-term">MySQL</div><div class="glossary-def">Système de base de données relationnelle (comme des tableaux Excel liés)</div></div>
+      <div class="glossary-item"><div class="glossary-term">Node.js</div><div class="glossary-def">Technologie pour exécuter du JavaScript côté serveur</div></div>
+      <div class="glossary-item"><div class="glossary-term">Parser</div><div class="glossary-def">Programme qui lit et structure du texte non structuré (ex: Word → données)</div></div>
+      <div class="glossary-item"><div class="glossary-term">RAG</div><div class="glossary-def">Technique IA : chercher des documents pertinents avant de générer une réponse</div></div>
+      <div class="glossary-item"><div class="glossary-term">React</div><div class="glossary-def">Bibliothèque pour créer des interfaces web dynamiques et réactives</div></div>
+      <div class="glossary-item"><div class="glossary-term">Repository</div><div class="glossary-def">Fichier responsable de toutes les opérations sur un type de donnée</div></div>
+      <div class="glossary-item"><div class="glossary-term">RGAA</div><div class="glossary-def">Guide officiel français d'accessibilité numérique (106 critères)</div></div>
+      <div class="glossary-item"><div class="glossary-term">Scraping</div><div class="glossary-def">Collecte automatique d'informations depuis des sources en ligne</div></div>
+      <div class="glossary-item"><div class="glossary-term">Serveur</div><div class="glossary-def">Programme qui répond en permanence aux demandes des navigateurs</div></div>
+      <div class="glossary-item"><div class="glossary-term">tRPC</div><div class="glossary-def">Système de communication typé entre frontend et backend</div></div>
+      <div class="glossary-item"><div class="glossary-term">TypeScript</div><div class="glossary-def">JavaScript avec des règles plus strictes pour éviter les erreurs</div></div>
+      <div class="glossary-item"><div class="glossary-term">Vecteur</div><div class="glossary-def">Représentation mathématique du sens d'un texte, utilisée par l'IA</div></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <div style="text-align:center; margin-top:60px; padding: 24px; color: var(--color-text-muted); font-size:0.82rem; border-top:1px solid var(--color-border);">
+    Rapport généré le 27 février 2026 · RGAA Constat Extractor v1.0.0
+  </div>
+
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#21262d',
+      primaryTextColor: '#e6edf3',
+      primaryBorderColor: '#58a6ff',
+      lineColor: '#58a6ff',
+      secondaryColor: '#161b22',
+      tertiaryColor: '#0d1117',
+      background: '#0d1117',
+      mainBkg: '#21262d',
+      nodeBorder: '#30363d',
+      clusterBkg: '#161b22',
+      titleColor: '#e6edf3',
+      edgeLabelBackground: '#21262d',
+    }
+  });
+</script>
+</body>
+</html>

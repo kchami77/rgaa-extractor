@@ -1,0 +1,63 @@
+---
+critere_id: "13.8"
+thematique: "Consultation"
+thematique_id: 13
+url: "https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.8"
+nb_tests: 2
+---
+
+# Critère 13.8 — Consultation
+
+**Dans chaque page web, chaque contenu en mouvement ou clignotant est-il contrôlable par l’utilisateur ?**
+
+_Source : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.8_
+
+---
+
+## Test 13.8.1
+
+Dans chaque page web, chaque contenu en mouvement déclenché automatiquement, vérifie-t-il une de ces conditions ?
+
+- La durée du mouvement est inférieure ou égale à 5 secondes ;
+- L’utilisateur peut arrêter et relancer le mouvement ;
+- L’utilisateur peut afficher et masquer le contenu en mouvement ;
+- L’utilisateur peut afficher la totalité de l’information sans le mouvement.
+
+**Méthodologie :**
+
+1. Retrouver dans le document les contenus en mouvement (obtenus au moyen d’une image, d’un script ou d’un effet CSS) déclenchés automatiquement au chargement de la page ou lors de l’affichage d’un contenu (cf. note) ;
+2. Pour chaque contenu, vérifier que :
+ - Soit la durée du mouvement est inférieure à 5 secondes ;
+ - Soit la présence d’un mécanisme (un bouton, par exemple) permet d’arrêter et de relancer le mouvement ;
+ - Soit la présence d’un mécanisme (un bouton, par exemple) permet de cacher et d’afficher à nouveau le contenu en mouvement ;
+ - Soit la présence d’un mécanisme (un bouton, par exemple) permet d’afficher la totalité du contenu sans mouvement.
+3. Si c’est le cas pour chaque contenu en mouvement, **le test est validé**.
+
+_Réf : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.8.1_
+
+---
+
+## Test 13.8.2
+
+Dans chaque page web, chaque contenu clignotant déclenché automatiquement, vérifie-t-il une de ces conditions ?
+
+- La durée du clignotement est inférieure ou égale à 5 secondes ;
+- L’utilisateur peut arrêter et relancer le clignotement ;
+- L’utilisateur peut afficher et masquer le contenu clignotant ;
+- L’utilisateur peut afficher la totalité de l’information sans le clignotement.
+
+**Méthodologie :**
+
+1. Retrouver dans le document les contenus clignotants (obtenus au moyen d’une image, d’un script ou d’un effet CSS) déclenchés automatiquement au chargement de la page ou lors de l’affichage d’un contenu (cf. note).
+2. Pour chaque contenu, vérifier que :
+ - Soit la durée du clignotement est inférieure à 5 secondes ;
+ - Soit la présence d’un mécanisme (un bouton, par exemple) permet d’arrêter et de relancer le clignotement ;
+ - Soit la présence d’un mécanisme (un bouton, par exemple) permet de cacher et d’afficher à nouveau le contenu clignotant ;
+ - Soit la présence d’un mécanisme (un bouton, par exemple) permet d’afficher la totalité du contenu clignotement.
+3. Si c’est le cas pour chaque contenu clignotant, **le test est validé**.
+
+Note : l'arrêt ou la mise en pause d'un contenu en mouvement ou clignotant au moyen de la prise de focus (par exemple, l'effet est suspendu uniquement pendant la prise de focus) n'est pas considéré comme un procédé conforme. Dans certains cas, le mouvement ne peut pas être arrêté, par exemple dans le cas d'une barre de progression, dans ce cas, le critère est non applicable.
+
+_Réf : https://accessibilite.numerique.gouv.fr/methode/criteres-et-tests#13.8.2_
+
+---

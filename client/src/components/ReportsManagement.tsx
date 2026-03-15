@@ -12,6 +12,7 @@ export default function ReportsManagement() {
   const utils = trpc.useUtils();
   const { data: reports, isLoading } = trpc.audit.getUserReports.useQuery();
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const processReport = trpc.audit.processReport.useMutation({
     onSuccess: (data) => {
@@ -42,11 +43,16 @@ export default function ReportsManagement() {
   };
 
   const handleDelete = (reportId: number) => {
-    console.log("Delete button clicked for report:", reportId);
-    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce rapport ? Cette action est irréversible et supprimera tous les constats associés.")) {
-      console.log("Confirmation accepted, mutating...");
-      deleteReport.mutate({ reportId });
-    }
+    setConfirmDeleteId(reportId);
+  };
+
+  const handleConfirmDelete = (reportId: number) => {
+    setConfirmDeleteId(null);
+    deleteReport.mutate({ reportId });
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteId(null);
   };
 
   const getStatusColor = (status: string) => {
@@ -170,18 +176,36 @@ export default function ReportsManagement() {
                   <Badge className={getStatusColor(report.status)}>
                     {getStatusLabel(report.status)}
                   </Badge>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => handleDelete(report.id)}
-                    disabled={deleteReport.isPending && deleteReport.variables?.reportId === report.id}
-                  >
-                   {deleteReport.isPending && deleteReport.variables?.reportId === report.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-red-600" />
-                    ) : (
-                      <Trash2 className="w-4 h-4 text-red-600" />
-                    )}
-                  </Button>
+                  {/* Confirmation inline */}
+                  {confirmDeleteId === report.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-red-600 font-medium">Supprimer ?</span>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleConfirmDelete(report.id)}
+                        disabled={deleteReport.isPending}
+                      >
+                        {deleteReport.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : "Oui"}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={handleCancelDelete}>
+                        Non
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(report.id)}
+                      disabled={deleteReport.isPending && deleteReport.variables?.reportId === report.id}
+                    >
+                      {deleteReport.isPending && deleteReport.variables?.reportId === report.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-red-600" />
+                      ) : (
+                        <Trash2 className="w-4 h-4 text-red-600" />
+                      )}
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

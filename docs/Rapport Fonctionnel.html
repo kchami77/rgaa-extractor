@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rapport Fonctionnel — RGAA Constat Extractor</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22253a;
+  --border: #2e3149;
+  --accent: #6366f1;
+  --accent2: #818cf8;
+  --accent3: #a5b4fc;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --green: #10b981;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --sidebar-w: 280px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden;}
+
+/* Progress bar */
+#progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),#a78bfa,#ec4899);z-index:1000;transition:width .1s;}
+
+/* Sidebar */
+#sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;z-index:100;padding:0 0 2rem;}
+#sidebar::-webkit-scrollbar{width:4px;}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.sidebar-header{padding:1.5rem 1.25rem 1rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1;}
+.sidebar-header .logo{display:flex;align-items:center;gap:.6rem;font-weight:700;font-size:.85rem;color:var(--accent3);}
+.sidebar-header .logo span{background:var(--accent);color:#fff;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+.sidebar-header p{font-size:.7rem;color:var(--text-dim);margin-top:.3rem;}
+.nav-section{padding:.75rem 1.25rem .25rem;font-size:.65rem;font-weight:600;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;}
+.nav-item{display:block;padding:.45rem 1.25rem;font-size:.78rem;color:var(--text-muted);text-decoration:none;transition:all .15s;border-left:2px solid transparent;cursor:pointer;}
+.nav-item:hover,.nav-item.active{color:var(--accent3);border-left-color:var(--accent);background:rgba(99,102,241,.06);}
+.nav-sub{padding-left:2rem;font-size:.73rem;}
+
+/* Main */
+#main{margin-left:var(--sidebar-w);padding:3rem 3.5rem;max-width:980px;}
+
+/* Header hero */
+.hero{background:linear-gradient(135deg,#1e1b4b 0%,#1a1d27 60%,#0f172a 100%);border:1px solid var(--border);border-radius:16px;padding:2.5rem 3rem;margin-bottom:3rem;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:250px;height:250px;background:radial-gradient(circle,rgba(99,102,241,.3),transparent 70%);pointer-events:none;}
+.badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(99,102,241,.15);color:var(--accent3);border:1px solid rgba(99,102,241,.3);border-radius:999px;padding:.25rem .75rem;font-size:.72rem;font-weight:600;margin-bottom:1rem;}
+.hero h1{font-size:2rem;font-weight:700;background:linear-gradient(135deg,#fff,var(--accent3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.3;}
+.hero p{color:var(--text-muted);font-size:.9rem;margin-top:.5rem;}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem;}
+.meta-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;}
+.meta-card .label{font-size:.65rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;font-weight:600;}
+.meta-card .val{font-size:.82rem;color:var(--text);font-weight:500;margin-top:.2rem;}
+
+/* Sections */
+.section{scroll-margin-top:2rem;margin-bottom:3.5rem;}
+h2{font-size:1.4rem;font-weight:700;color:#fff;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;}
+h2 .num{background:linear-gradient(135deg,var(--accent),#a78bfa);color:#fff;width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
+h3{font-size:1.05rem;font-weight:600;color:var(--accent3);margin:1.5rem 0 .75rem;padding-left:.75rem;border-left:3px solid var(--accent);}
+h4{font-size:.9rem;font-weight:600;color:var(--text);margin:1rem 0 .5rem;}
+p{color:var(--text-muted);margin-bottom:.85rem;font-size:.9rem;}
+strong{color:var(--text);font-weight:600;}
+
+/* Divider */
+hr{border:none;border-top:1px solid var(--border);margin:2.5rem 0;}
+
+/* Alerts */
+.alert{border-radius:10px;padding:1rem 1.25rem;margin:1.25rem 0;border-left:4px solid;font-size:.85rem;}
+.alert-note{background:rgba(59,130,246,.08);border-color:var(--blue);color:#93c5fd;}
+.alert-important{background:rgba(99,102,241,.1);border-color:var(--accent);color:var(--accent3);}
+.alert-warning{background:rgba(245,158,11,.08);border-color:var(--yellow);color:#fcd34d;}
+.alert-tip{background:rgba(16,185,129,.08);border-color:var(--green);color:#6ee7b7;}
+.alert-icon{font-weight:700;margin-bottom:.3rem;display:block;font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;opacity:.8;}
+
+/* Tables */
+.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);margin:1rem 0;}
+table{width:100%;border-collapse:collapse;font-size:.82rem;}
+thead tr{background:var(--surface2);}
+th{padding:.7rem 1rem;text-align:left;font-weight:600;color:var(--accent3);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;}
+td{padding:.65rem 1rem;color:var(--text-muted);border-top:1px solid var(--border);}
+tr:hover td{background:rgba(255,255,255,.02);}
+td code,th code{background:rgba(99,102,241,.12);color:var(--accent3);padding:.1rem .35rem;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.8em;}
+
+/* Code blocks */
+pre{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1.25rem 1.5rem;overflow-x:auto;margin:1rem 0;font-family:'JetBrains Mono',monospace;font-size:.8rem;color:#c4b5fd;line-height:1.6;}
+code{font-family:'JetBrains Mono',monospace;background:rgba(99,102,241,.12);color:var(--accent3);padding:.1rem .35rem;border-radius:4px;font-size:.85em;}
+pre code{background:none;padding:0;color:inherit;}
+
+/* Mermaid */
+.mermaid-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin:1.25rem 0;overflow-x:auto;text-align:center;}
+.mermaid-label{font-size:.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;font-weight:600;margin-bottom:.75rem;}
+
+/* Module cards */
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin:1.25rem 0;}
+.module-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:border-color .2s,transform .2s;}
+.module-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+.module-card .icon{font-size:1.5rem;margin-bottom:.5rem;}
+.module-card .name{font-weight:600;color:var(--text);font-size:.88rem;margin-bottom:.3rem;}
+.module-card .desc{font-size:.78rem;color:var(--text-muted);}
+.module-card .file{font-size:.7rem;color:var(--text-dim);margin-top:.5rem;font-family:'JetBrains Mono',monospace;}
+
+/* Steps */
+.steps{margin:1rem 0;}
+.step{display:flex;gap:1rem;margin-bottom:1rem;align-items:flex-start;}
+.step-num{background:linear-gradient(135deg,var(--accent),#a78bfa);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:.1rem;}
+.step-content{flex:1;}
+.step-content .step-title{font-weight:600;color:var(--text);font-size:.88rem;}
+.step-content p{margin-bottom:0;font-size:.82rem;}
+
+/* Tech chips */
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0;}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:999px;padding:.2rem .75rem;font-size:.73rem;color:var(--text-muted);}
+.chip.accent{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.3);color:var(--accent3);}
+
+/* Glossary */
+.glossary{display:grid;gap:.6rem;}
+.gitem{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;display:grid;grid-template-columns:160px 1fr;}
+.gitem .term{font-weight:600;color:var(--accent3);font-size:.82rem;}
+.gitem .def{color:var(--text-muted);font-size:.82rem;}
+
+/* Roadmap */
+.phases{display:grid;gap:1rem;}
+.phase{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;border-left:4px solid var(--accent);}
+.phase:nth-child(2){border-left-color:#a78bfa;}
+.phase:nth-child(3){border-left-color:#ec4899;}
+.phase .phase-title{font-weight:700;font-size:.9rem;color:var(--text);margin-bottom:.5rem;}
+.phase li{font-size:.82rem;color:var(--text-muted);margin-left:1rem;margin-bottom:.25rem;}
+
+/* Back to top */
+#btt{position:fixed;bottom:2rem;right:2rem;background:var(--accent);color:#fff;border:none;border-radius:50%;width:42px;height:42px;cursor:pointer;font-size:1.1rem;opacity:0;transition:opacity .3s;z-index:200;box-shadow:0 4px 15px rgba(99,102,241,.5);}
+#btt.show{opacity:1;}
+
+/* Lists */
+ul,ol{margin:.5rem 0 .85rem 1.25rem;color:var(--text-muted);font-size:.88rem;}
+li{margin-bottom:.3rem;}
+li strong{color:var(--text);}
+
+@media(max-width:900px){
+  #sidebar{transform:translateX(-100%);}
+  #main{margin-left:0;padding:2rem 1.25rem;}
+  .meta-grid{grid-template-columns:1fr 1fr;}
+  .gitem{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo"><span>📘</span> Rapport Fonctionnel</div>
+    <p>RGAA Constat Extractor v1.0</p>
+  </div>
+  <div class="nav-section">Sommaire</div>
+  <a class="nav-item" onclick="scrollTo('s1')">1. Vision &amp; Problème</a>
+  <a class="nav-item" onclick="scrollTo('s2')">2. Architecture Globale</a>
+  <a class="nav-item" onclick="scrollTo('s3')">3. Modules Fonctionnels</a>
+  <a class="nav-item nav-sub" onclick="scrollTo('s31')">  3.1 Parseur Word</a>
+  <a class="nav-item nav-sub" onclick="scrollTo('s32')">  3.2 Dédoublonnage</a>
+  <a class="nav-item nav-sub" onclick="scrollTo('s33')">  3.3 Stockage Hybride</a>
+  <a class="nav-item nav-sub" onclick="scrollTo('s34')">  3.4 Knowledge Hub (IA)</a>
+  <a class="nav-item nav-sub" onclick="scrollTo('s35')">  3.5 Serveur MCP</a>
+  <a class="nav-item" onclick="scrollTo('s4')">4. Couche API (tRPC)</a>
+  <a class="nav-item" onclick="scrollTo('s5')">5. Interface Utilisateur</a>
+  <a class="nav-item" onclick="scrollTo('s6')">6. Base de Données</a>
+  <a class="nav-item" onclick="scrollTo('s7')">7. Flux de Données</a>
+  <a class="nav-item" onclick="scrollTo('s8')">8. Technologies</a>
+  <a class="nav-item" onclick="scrollTo('s9')">9. Glossaire Junior</a>
+  <a class="nav-item" onclick="scrollTo('s10')">10. Roadmap Future</a>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">📄 Rapport Fonctionnel · 14 mars 2026</div>
+    <h1>RGAA Constat Extractor</h1>
+    <p>Analyse automatisée du code source · Public cible : Développeurs (tous niveaux), Product Owners, Chefs de projet</p>
+    <div class="meta-grid">
+      <div class="meta-card"><div class="label">Projet</div><div class="val">rgaa-extractor</div></div>
+      <div class="meta-card"><div class="label">Version</div><div class="val">1.0.0</div></div>
+      <div class="meta-card"><div class="label">Stack</div><div class="val">React 19 · Node.js · MySQL · ChromaDB</div></div>
+    </div>
+  </div>
+
+  <!-- 1. VISION -->
+  <section class="section" id="s1">
+    <h2><span class="num">1</span> Vision &amp; Problème Résolu</h2>
+    <h3>Le Problème</h3>
+    <p>Un auditeur d'accessibilité numérique doit vérifier qu'un site web respecte le <strong>RGAA</strong> (Référentiel Général d'Amélioration de l'Accessibilité), un cadre légal de <strong>106 critères</strong> répartis sur <strong>13 thématiques</strong>. Ce travail est :</p>
+    <ul>
+      <li><strong>🔁 Répétitif :</strong> les mêmes erreurs reviennent d'un audit à l'autre.</li>
+      <li><strong>🧠 Cognitif :</strong> retrouver la bonne recommandation parmi 106 critères est lent.</li>
+      <li><strong>📂 Silotté :</strong> chaque rapport vit dans un fichier Word isolé, sans capitalisation.</li>
+    </ul>
+    <h3>La Solution</h3>
+    <p>Une application web full-stack qui :</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Extraction automatique</div><p>Lit les rapports Word <code>.docx</code> et en extrait tous les constats d'accessibilité structurés.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Capitalisation</div><p>Stocke les constats dans une bibliothèque dédupliquée — chaque erreur unique n'apparaît qu'<em>une seule fois</em>, avec un compteur d'occurrences.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Augmentation IA</div><p>Offre un assistant conversationnel (RAG) qui répond aux questions de l'auditeur en s'appuyant sur les audits passés et le référentiel officiel.</p></div></div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 2. ARCHITECTURE -->
+  <section class="section" id="s2">
+    <h2><span class="num">2</span> Architecture Globale</h2>
+    <p>Le projet est un <strong>monorepo</strong> (un seul dépôt pour le frontend et le backend), connectés via <strong>tRPC</strong>, un protocole qui partage automatiquement les types TypeScript des deux côtés.</p>
+    <div class="mermaid-wrap">
+      <div class="mermaid-label">Diagramme — Architecture Système Globale</div>
+      <div class="mermaid">
+graph TB
+    subgraph Client["🖥️ Frontend React 19"]
+        UI["Interface shadcn/ui"]
+        TQ["TanStack Query (Cache)"]
+    end
+    subgraph Server["⚙️ Serveur Node.js / Express"]
+        TRPC["tRPC Router"]
+        subgraph Core["Modules Métier"]
+            PARSER["📄 Parseur Word"]
+            DEDUP["🔑 Dédoublonnage SHA-256"]
+            STORAGE["💾 Stockage Local/S3"]
+        end
+        subgraph Hub["🧠 Knowledge Hub IA"]
+            RAG["Moteur RAG"]
+            SCRAPER["Scraper RGAA"]
+            LLM["Adaptateur LLM"]
+        end
+        MCP["🔌 Serveur MCP"]
+    end
+    subgraph Data["💾 Données"]
+        DB[("MySQL")]
+        VDB[("ChromaDB")]
+        STO["Fichiers"]
+    end
+    UI-->TQ-->TRPC
+    TRPC-->Core
+    TRPC-->Hub
+    Core-->DB & STO
+    Hub-->VDB & DB
+    MCP-->Hub
+      </div>
+    </div>
+    <div class="alert alert-note"><span class="alert-icon">💡 Note</span><strong>Monorepo</strong> = Un seul dossier de projet contenant à la fois le frontend (<code>client/</code>) et le backend (<code>server/</code>). Cela simplifie le partage de types TypeScript.</div>
+  </section>
+
+  <hr/>
+
+  <!-- 3. MODULES -->
+  <section class="section" id="s3">
+    <h2><span class="num">3</span> Modules Fonctionnels</h2>
+    <div class="module-grid">
+      <div class="module-card"><div class="icon">📄</div><div class="name">Parseur Word</div><div class="desc">Transforme un <code>.docx</code> en constats structurés exploitables.</div><div class="file">server/parser.ts</div></div>
+      <div class="module-card"><div class="icon">🔑</div><div class="name">Dédoublonnage</div><div class="desc">Garantit l'unicité de chaque constat via hash SHA-256.</div><div class="file">utils/deduplication.ts</div></div>
+      <div class="module-card"><div class="icon">💾</div><div class="name">Stockage Hybride</div><div class="desc">Abstraction Local / AWS S3 transparente pour le code.</div><div class="file">server/storage.ts</div></div>
+      <div class="module-card"><div class="icon">🧠</div><div class="name">Knowledge Hub IA</div><div class="desc">Moteur RAG + embeddings + LLM pour l'assistant IA.</div><div class="file">server/hub/</div></div>
+      <div class="module-card"><div class="icon">🔌</div><div class="name">Serveur MCP</div><div class="desc">Expose le Hub aux outils IA externes (Claude, Cursor…).</div><div class="file">server/mcp.ts</div></div>
+    </div>
+
+    <!-- 3.1 PARSEUR -->
+    <h3 id="s31">3.1 Le Parseur Word</h3>
+    <p>C'est le cerveau de l'extraction. Un fichier Word n'est pas une base de données : c'est du texte libre. Le parseur doit <em>inférer</em> la structure à partir de conventions textuelles.</p>
+    <div class="mermaid-wrap">
+      <div class="mermaid-label">Flux interne du Parseur Word</div>
+      <div class="mermaid">
+flowchart LR
+    A["Fichier .docx Buffer"] --> B["mammoth.js"]
+    B --> C["Texte brut"] & D["HTML avec liens"]
+    C --> E["parseTextContent()"]
+    D --> F["extractAuditedPages()"]
+    E --> G["ExtractedFinding[]"]
+    F --> H["AuditedPage[]"]
+    G & H --> I["ParseResult final"]
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Champ</th><th>Description</th><th>Exemple</th></tr></thead>
+        <tbody>
+          <tr><td><code>thematicNumber</code></td><td>Numéro de la thématique</td><td>1</td></tr>
+          <tr><td><code>criterionReference</code></td><td>Référence du critère</td><td>"1.1"</td></tr>
+          <tr><td><code>impact</code></td><td>Niveau de criticité</td><td>"Bloquant"</td></tr>
+          <tr><td><code>location</code></td><td>Où se situe l'erreur</td><td>"Page d'accueil"</td></tr>
+          <tr><td><code>finding</code></td><td>Texte du constat</td><td>"L'image logo n'a pas d'alt."</td></tr>
+          <tr><td><code>solution</code></td><td>Correction suggérée</td><td>"Ajouter alt="Logo"."</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3.2 DEDUP -->
+    <h3 id="s32">3.2 Le Moteur de Dédoublonnage</h3>
+    <p>Si 10 audits signalent la même erreur, on ne veut pas 10 entrées. Le moteur garantit <strong>une seule entrée</strong> avec un compteur <code>occurrenceCount</code>.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Normalisation sévère</div><p>Lowercase, suppression des accents, suppression de la ponctuation. <code>"L'image du Lôgo !" → "limage du logo "</code></p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Hash SHA-256</div><p>Calcule une empreinte de 64 caractères sur le texte normalisé + l'ID du critère → <code>signatureHash</code>.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Upsert en base</div><p>Si le hash <em>n'existe pas</em> → création d'un nouveau template. S'il <em>existe</em> → incrémentation de <code>occurrenceCount</code>.</p></div></div>
+    </div>
+    <div class="alert alert-important"><span class="alert-icon">⚡ Important</span>Ce mécanisme crée la <strong>bibliothèque de templates</strong> (<code>finding_templates</code>) — la "mémoire" du système, indépendante des rapports individuels.</div>
+
+    <!-- 3.3 STOCKAGE -->
+    <h3 id="s33">3.3 Le Stockage Hybride</h3>
+    <p>Pattern d'abstraction : le code appelle toujours <code>storagePut()</code>, <code>storageGet()</code>, <code>storageDelete()</code> sans savoir si les fichiers vont sur le disque ou sur AWS S3.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Condition</th><th>Mode</th><th>Comportement</th></tr></thead>
+        <tbody>
+          <tr><td><code>FORGE_API_KEY</code> absent</td><td><strong>Local</strong></td><td>Fichiers écrits dans <code>./uploads/</code></td></tr>
+          <tr><td><code>FORGE_API_KEY</code> présent</td><td><strong>Cloud S3</strong></td><td>Proxy via l'API Forge vers AWS S3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3.4 KNOWLEDGE HUB -->
+    <h3 id="s34">3.4 Le Knowledge Hub — Intelligence Artificielle</h3>
+    <div class="alert alert-tip"><span class="alert-icon">💡 Pour un junior</span>Imaginez que vous interrogez ChatGPT, mais avant de vous répondre, il fouille d'abord dans VOS documents internes pour enrichir sa réponse. C'est le RAG (Retrieval-Augmented Generation).</div>
+
+    <h4>Sub-module A — Service d'Embedding</h4>
+    <p>Transforme du texte en vecteurs (suite de nombres) qui capturent le <em>sens</em> du texte. Deux phrases similaires ont des vecteurs proches → ChromaDB peut les trouver par similarité.</p>
+    <pre>"L'image n'a pas d'attribut alt"  →  [0.12, -0.87, 0.43, ...]
+"Texte alternatif manquant"       →  [0.11, -0.85, 0.41, ...]  ← similaire !</pre>
+
+    <h4>Sub-module B — Pipeline d'Ingestion</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fonction</th><th>Déclencheur</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>indexReportFindings()</code></td><td>Automatique après import</td><td>Indexe les constats en arrière-plan</td></tr>
+          <tr><td><code>bootstrapFromExistingFindings()</code></td><td>Migration one-shot manuelle</td><td>Migration des données v1</td></tr>
+          <tr><td><code>indexValidatedFinding()</code></td><td>Via outil MCP</td><td>Ajout manuel d'un expert</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-important"><span class="alert-icon">⚡ Critique</span>L'indexation ChromaDB est toujours en <strong>fire-and-forget</strong> (<code>setImmediate</code>). Si ChromaDB est en panne, l'import MySQL continue sans erreur. <strong>Le métier n'est jamais bloqué par l'IA.</strong></div>
+
+    <h4>Sub-module C — Moteur RAG (ragEngine.ts)</h4>
+    <p>3 fonctions publiques principales :</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Fonction</th><th>Usage</th><th>Collections interrogées</th></tr></thead>
+        <tbody>
+          <tr><td><code>askAccessibility(question)</code></td><td>Question libre</td><td>rgaa_referential, rgaa_findings, rgaa_code</td></tr>
+          <tr><td><code>analyzeCode(html)</code></td><td>Analyse HTML</td><td>rgaa_referential, rgaa_code, rgaa_findings</td></tr>
+          <tr><td><code>suggestFix(problem, ref)</code></td><td>Correction</td><td>rgaa_code, rgaa_findings</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Formule de scoring :</strong></p>
+    <pre>score = (1 - distance_cosine) × poids_collection
+      + boost_occurrences (log)
+      + boost_confidence (niveau de validation)</pre>
+
+    <!-- 3.5 MCP -->
+    <h3 id="s35">3.5 Le Serveur MCP</h3>
+    <p>Expose les fonctionnalités du Hub à des outils IA externes (Claude, Cursor, VSCode Copilot…) via le protocole standardisé MCP.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Type</th><th>Nom</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>Tool</td><td><code>search_criteria</code></td><td>Recherche sémantique dans le référentiel</td></tr>
+          <tr><td>Tool</td><td><code>propose_deduplication</code></td><td>Analyse de similarité entre constats</td></tr>
+          <tr><td>Tool</td><td><code>validate_finding</code></td><td>Valide et indexe un constat expert</td></tr>
+          <tr><td>Resource</td><td><code>rgaa://criteria/{id}</code></td><td>Accès direct à un critère par son ID</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 4. API -->
+  <section class="section" id="s4">
+    <h2><span class="num">4</span> Couche API — tRPC</h2>
+    <p><strong>tRPC</strong> partage automatiquement les types TypeScript entre le frontend et le backend. Si un paramètre change côté serveur, TypeScript signale l'erreur côté client immédiatement.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Router</th><th>Fichier</th><th>Fonctions exposées</th></tr></thead>
+        <tbody>
+          <tr><td><code>auditRouter</code></td><td>routers/audit.ts</td><td>Upload, traitement, liste, suppression de rapports</td></tr>
+          <tr><td><code>hubRouter</code></td><td>routers/hub.ts</td><td>Questions IA, analyse HTML, suggestion, scraper</td></tr>
+          <tr><td><code>findingTemplatesRouter</code></td><td>routers/findingTemplates.ts</td><td>CRUD de la bibliothèque de templates</td></tr>
+          <tr><td><code>criteriaRouter</code></td><td>routers/criteria.ts</td><td>Lecture du référentiel RGAA</td></tr>
+          <tr><td><code>settingsRouter</code></td><td>routers/settings.ts</td><td>Configuration du Hub (poids RAG, clé API LLM…)</td></tr>
+          <tr><td><code>authRouter</code></td><td>_core/</td><td>Authentification JWT via cookie</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="alert alert-note"><span class="alert-icon">💡 Note</span>Toutes les procédures <code>protectedProcedure</code> requièrent un utilisateur authentifié. <code>publicProcedure</code> sont accessibles sans connexion (ex: <code>hub.ask</code>).</div>
+  </section>
+
+  <hr/>
+
+  <!-- 5. UI -->
+  <section class="section" id="s5">
+    <h2><span class="num">5</span> Interface Utilisateur</h2>
+    <p>SPA React organisée en <strong>6 onglets</strong> depuis la page principale <code>Home.tsx</code>.</p>
+    <div class="mermaid-wrap">
+      <div class="mermaid-label">Navigation — Les 6 onglets</div>
+      <div class="mermaid">
+graph LR
+    H["🏠 Home.tsx"] --> A["📤 Upload\nImport .docx"]
+    H --> B["📄 Rapports\nListe & gestion"]
+    H --> C["📚 Bibliothèque\nTemplates dédupliqués"]
+    H --> D["📊 Stats\nGraphiques"]
+    H --> E["📈 Évolution\nComparaison audits"]
+    H --> F["💬 Chat Expert\nAssistant IA"]
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Onglet</th><th>Composant</th><th>Fonctionnalités clés</th></tr></thead>
+        <tbody>
+          <tr><td>📤 Upload</td><td><code>UploadSection</code></td><td>Drag &amp; Drop .docx, anti-doublon, progression</td></tr>
+          <tr><td>📄 Rapports</td><td><code>ReportsManagement</code></td><td>Statuts, détail constats, suppression</td></tr>
+          <tr><td>📚 Bibliothèque</td><td><code>FindingsLibrary</code></td><td>Filtres thématiques, recherche sémantique ChromaDB</td></tr>
+          <tr><td>📊 Stats</td><td><code>StatsOverview</code></td><td>Recharts : répartition par thématique et impact</td></tr>
+          <tr><td>📈 Évolution</td><td><code>EvolutionReport</code></td><td>Comparaison multi-rapports dans le temps</td></tr>
+          <tr><td>💬 Chat Expert</td><td><code>HubChat</code></td><td>IA conversationnelle + analyse HTML + sources citées</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 6. BDD -->
+  <section class="section" id="s6">
+    <h2><span class="num">6</span> Base de Données</h2>
+    <p>MySQL 8+ avec l'ORM <strong>Drizzle</strong>. Schéma défini dans <code>drizzle/schema.ts</code>.</p>
+    <div class="mermaid-wrap">
+      <div class="mermaid-label">Diagramme Entité-Relation</div>
+      <div class="mermaid">
+erDiagram
+    users ||--o{ audit_reports : "possède"
+    audit_reports ||--o{ findings : "contient"
+    findings }o--|| rgaa_criteria : "référence"
+    findings }o--o| finding_templates : "issu de"
+    finding_templates }o--|| rgaa_criteria : "référence"
+    finding_templates }o--|| rgaa_thematics : "appartient à"
+    rgaa_criteria }o--|| rgaa_thematics : "appartient à"
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Rôle</th></tr></thead>
+        <tbody>
+          <tr><td><code>users</code></td><td>Comptes utilisateurs (authentification JWT)</td></tr>
+          <tr><td><code>audit_reports</code></td><td>Métadonnées des rapports (nom, statut, nb constats)</td></tr>
+          <tr><td><code>findings</code></td><td>Constats individuels liés à un rapport</td></tr>
+          <tr><td><code>finding_templates</code></td><td>Constats dédupliqués avec <code>occurrenceCount</code></td></tr>
+          <tr><td><code>rgaa_criteria</code></td><td>Les 106 critères RGAA (référentiel statique)</td></tr>
+          <tr><td><code>rgaa_thematics</code></td><td>Les 13 thématiques RGAA</td></tr>
+          <tr><td><code>app_settings</code></td><td>Configuration persistée (poids RAG, clé API…)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 7. FLUX -->
+  <section class="section" id="s7">
+    <h2><span class="num">7</span> Flux de Données Principaux</h2>
+    <h3>Flux 1 — Import complet d'un rapport</h3>
+    <div class="mermaid-wrap">
+      <div class="mermaid-label">Séquence — Import d'un rapport .docx</div>
+      <div class="mermaid">
+sequenceDiagram
+    actor User
+    participant UI as Frontend
+    participant API as tRPC API
+    participant Parser as Parseur Word
+    participant DB as MySQL
+    participant Hub as ChromaDB (async)
+    User->>UI: Dépose fichier .docx
+    UI->>API: uploadReport(fileName, fileData)
+    API->>API: storagePut() → sauvegarde le fichier
+    API->>DB: createAuditReport() statut "pending"
+    API-->>UI: reportId
+    UI->>API: processReport(reportId)
+    API->>DB: updateStatus("processing")
+    API->>Parser: parseAuditReportBuffer(buffer)
+    Parser-->>API: findings[], auditedPages[], siteUrl
+    loop Pour chaque constat
+        API->>API: generateFindingSignature() SHA-256
+        API->>DB: upsertFindingTemplate()
+    end
+    API->>DB: createFindingsBatch()
+    API->>DB: updateStatus("completed")
+    API-->>UI: success, findingsCount
+    Note over API,Hub: 🔥 Fire-and-Forget
+    API-)Hub: indexReportFindings(reportId)
+    Hub->>Hub: embed() + upsertDocuments() ChromaDB
+      </div>
+    </div>
+    <h3>Flux 2 — Question à l'assistant IA</h3>
+    <div class="mermaid-wrap">
+      <div class="mermaid-label">Séquence — Moteur RAG</div>
+      <div class="mermaid">
+sequenceDiagram
+    actor User
+    participant UI as HubChat
+    participant API as hubRouter
+    participant RAG as ragEngine
+    participant VDB as ChromaDB
+    participant LLM as LLM
+    User->>UI: Pose une question
+    UI->>API: hub.ask({ question })
+    API->>RAG: askAccessibility(question)
+    RAG->>RAG: embed(question) → vecteur
+    RAG->>VDB: query 3 collections
+    VDB-->>RAG: Top 12 résultats + scores
+    RAG->>RAG: buildRagPrompt() avec contexte
+    RAG->>LLM: invokeHubLLM()
+    LLM-->>RAG: Réponse détaillée
+    RAG-->>UI: answer + sources + mode
+      </div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 8. TECHNOLOGIES -->
+  <section class="section" id="s8">
+    <h2><span class="num">8</span> Technologies Utilisées</h2>
+    <div class="chips">
+      <span class="chip accent">React 19</span><span class="chip accent">TypeScript</span><span class="chip accent">Node.js</span>
+      <span class="chip accent">tRPC v11</span><span class="chip accent">MySQL 8</span><span class="chip accent">ChromaDB</span>
+      <span class="chip">shadcn/ui</span><span class="chip">Radix UI</span><span class="chip">TanStack Query</span>
+      <span class="chip">Drizzle ORM</span><span class="chip">mammoth.js</span><span class="chip">Zod</span>
+      <span class="chip">Framer Motion</span><span class="chip">Recharts</span><span class="chip">Wouter</span>
+      <span class="chip">JWT (jose)</span><span class="chip">AWS S3</span><span class="chip">Vitest</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Couche</th><th>Technologie</th><th>Rôle dans le projet</th></tr></thead>
+        <tbody>
+          <tr><td>Frontend</td><td>React 19</td><td>Framework UI — composants réactifs</td></tr>
+          <tr><td>Frontend</td><td>shadcn/ui + Radix UI</td><td>Composants UI accessibles prêts à l'emploi</td></tr>
+          <tr><td>Frontend</td><td>TanStack Query v5</td><td>Cache et sync des requêtes serveur</td></tr>
+          <tr><td>Frontend</td><td>Wouter</td><td>Routage côté client léger (≈ React Router)</td></tr>
+          <tr><td>Communication</td><td>tRPC v11</td><td>API type-safe client ↔ serveur sans REST</td></tr>
+          <tr><td>Communication</td><td>Zod</td><td>Validation des schémas de données</td></tr>
+          <tr><td>Backend</td><td>Node.js + Express</td><td>Serveur HTTP</td></tr>
+          <tr><td>Backend</td><td>Vite</td><td>Bundler frontend ultra-rapide</td></tr>
+          <tr><td>Base de données</td><td>MySQL 8+</td><td>Stockage relationnel principal</td></tr>
+          <tr><td>ORM</td><td>Drizzle ORM</td><td>Abstraction SQL type-safe</td></tr>
+          <tr><td>IA / Vecteurs</td><td>ChromaDB</td><td>Base de données vectorielle pour le RAG</td></tr>
+          <tr><td>Parsing Word</td><td>mammoth.js</td><td>Conversion <code>.docx</code> → texte + HTML</td></tr>
+          <tr><td>Authentification</td><td>JWT (jose)</td><td>Sessions sécurisées via cookie</td></tr>
+          <tr><td>Stockage</td><td>Local FS / AWS S3</td><td>Stockage des fichiers <code>.docx</code></td></tr>
+          <tr><td>MCP</td><td>@modelcontextprotocol/sdk</td><td>Interface pour outils IA externes</td></tr>
+          <tr><td>Tests</td><td>Vitest</td><td>Tests unitaires</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 9. GLOSSAIRE -->
+  <section class="section" id="s9">
+    <h2><span class="num">9</span> Glossaire pour les Juniors</h2>
+    <div class="glossary">
+      <div class="gitem"><div class="term">RGAA</div><div class="def">Le "code de la route" de l'accessibilité web en France. 106 règles à respecter.</div></div>
+      <div class="gitem"><div class="term">Constat</div><div class="def">Une erreur d'accessibilité trouvée lors d'un audit.</div></div>
+      <div class="gitem"><div class="term">Template de Constat</div><div class="def">Version "générique" d'un constat, réutilisable entre plusieurs audits.</div></div>
+      <div class="gitem"><div class="term">tRPC</div><div class="def">Un tunnel direct entre le code serveur et le code client, avec vérification des types.</div></div>
+      <div class="gitem"><div class="term">ORM (Drizzle)</div><div class="def">Outil qui transforme des lignes de base de données en objets JavaScript.</div></div>
+      <div class="gitem"><div class="term">ChromaDB</div><div class="def">Base de données qui recherche par <em>sens</em> plutôt que par mot exact.</div></div>
+      <div class="gitem"><div class="term">Embedding</div><div class="def">La "traduction" d'un texte en une suite de nombres qui capture son sens.</div></div>
+      <div class="gitem"><div class="term">RAG</div><div class="def">Technique où l'IA consulte vos données privées avant de répondre.</div></div>
+      <div class="gitem"><div class="term">SHA-256</div><div class="def">Fonction qui génère un code unique (empreinte) à partir de n'importe quel texte.</div></div>
+      <div class="gitem"><div class="term">MCP</div><div class="def">Standard permettant à une IA externe (Claude…) d'utiliser vos outils.</div></div>
+      <div class="gitem"><div class="term">Fire-and-Forget</div><div class="def">Lancer une tâche en arrière-plan sans attendre qu'elle se termine.</div></div>
+      <div class="gitem"><div class="term">Monorepo</div><div class="def">Un seul dossier de projet contenant à la fois le frontend et le backend.</div></div>
+      <div class="gitem"><div class="term">Upsert</div><div class="def">Insérer si ça n'existe pas, mettre à jour si ça existe déjà.</div></div>
+      <div class="gitem"><div class="term">JWT</div><div class="def">Jeton de sécurité signé qui prouve qu'un utilisateur est connecté.</div></div>
+      <div class="gitem"><div class="term">SPA</div><div class="def">Single Page Application : une seule page HTML dont le contenu change dynamiquement.</div></div>
+    </div>
+  </section>
+
+  <hr/>
+
+  <!-- 10. ROADMAP -->
+  <section class="section" id="s10">
+    <h2><span class="num">10</span> Roadmap Future</h2>
+    <div class="phases">
+      <div class="phase">
+        <div class="phase-title">🔵 Phase 1 — RAG Multi-Agents</div>
+        <ul>
+          <li><strong>RAG Référentiel :</strong> Vérité immuable du RGAA et WCAG.</li>
+          <li><strong>RAG Expertise :</strong> Bibliothèque de constats capitalisés.</li>
+          <li><strong>RAG Pédagogique :</strong> Explications simplifiées et exemples conformes.</li>
+          <li><strong>RAG Patterns :</strong> Détection de patterns non-accessibles fréquents.</li>
+        </ul>
+      </div>
+      <div class="phase">
+        <div class="phase-title">🟣 Phase 2 — Anti-Hallucination</div>
+        <ul>
+          <li><strong>Seuils de similarité stricts (>85%) :</strong> L'IA ne répond que si le contexte est pertinent.</li>
+          <li><strong>Citations obligatoires :</strong> Chaque affirmation liée à une source précise.</li>
+          <li><strong>Prompt Guards :</strong> L'IA admet explicitement quand elle ne sait pas.</li>
+        </ul>
+      </div>
+      <div class="phase">
+        <div class="phase-title">🟠 Phase 3 — Intégrations Avancées</div>
+        <ul>
+          <li><strong>Computer Vision :</strong> Analyser des captures d'écran pour détecter des erreurs visuelles.</li>
+          <li><strong>Knowledge Graph :</strong> Liens logiques entre critères et composants.</li>
+          <li><strong>Connecteur MCP Global :</strong> Interface unique pour Claude, ChatGPT… dans l'IDE.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer style="text-align:center;padding:2rem 0 1rem;color:var(--text-dim);font-size:.78rem;border-top:1px solid var(--border);margin-top:2rem;">
+    Rapport généré le 14 mars 2026 · Basé sur l'analyse du code source de <code>rgaa-extractor-complete</code>
+  </footer>
+</main>
+
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Retour en haut">↑</button>
+
+<script>
+// Progress bar
+window.addEventListener('scroll',()=>{
+  const d=document.documentElement,p=(d.scrollTop/(d.scrollHeight-d.clientHeight))*100;
+  document.getElementById('progress').style.width=p+'%';
+  document.getElementById('btt').classList.toggle('show',d.scrollTop>400);
+});
+
+// Active nav
+const sections=document.querySelectorAll('.section');
+const navItems=document.querySelectorAll('.nav-item');
+const scrollTo=id=>{const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth'});};
+
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navItems.forEach(n=>n.classList.remove('active'));
+      const id=e.target.id;
+      const match=[...navItems].find(n=>n.getAttribute('onclick')?.includes(id));
+      if(match)match.classList.add('active');
+    }
+  });
+},{rootMargin:'-30% 0px -60% 0px'});
+sections.forEach(s=>observer.observe(s));
+
+// Mermaid
+mermaid.initialize({
+  startOnLoad:true,
+  theme:'dark',
+  themeVariables:{
+    primaryColor:'#4f46e5',
+    primaryTextColor:'#e2e8f0',
+    primaryBorderColor:'#6366f1',
+    lineColor:'#6366f1',
+    sectionBkgColor:'#1a1d27',
+    altSectionBkgColor:'#22253a',
+    gridColor:'#2e3149',
+    fontFamily:'Inter, sans-serif',
+    fontSize:'13px',
+    nodeBorder:'#6366f1',
+    mainBkg:'#22253a',
+    edgeLabelBackground:'#1a1d27',
+    tertiaryColor:'#1e1b4b',
+    background:'#1a1d27',
+    secondaryColor:'#2e3149',
+    actorBkg:'#22253a',
+    actorBorder:'#6366f1',
+    actorTextColor:'#e2e8f0',
+    signalColor:'#818cf8',
+    signalTextColor:'#e2e8f0',
+    labelBoxBkgColor:'#22253a',
+    labelBoxBorderColor:'#6366f1',
+    labelTextColor:'#e2e8f0',
+    loopTextColor:'#94a3b8',
+    noteBkgColor:'#1e1b4b',
+    noteTextColor:'#e2e8f0',
+    noteBorderColor:'#6366f1',
+  },
+  flowchart:{htmlLabels:true,curve:'basis'},
+  er:{diagramPadding:20},
+  sequence:{diagramMarginX:20,diagramMarginY:20,actorMargin:80,width:160,height:60},
+});
+</script>
+</body>
+</html>
+
