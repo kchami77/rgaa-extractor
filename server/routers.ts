@@ -29,13 +29,7 @@ import {
   getFindingTemplateBySignature,
   upsertFindingTemplateFromFinding,
   updateFindingTemplate,
-  syncTemplatesFromFindings,
-  bulkGeneralizeTemplates,
-  resetTemplateToOriginal,
-  searchCriteria,
-  searchSimilarFindings,
 } from "./db";
-import { aiService } from "./services/aiService";
 import { generateFindingSignature } from "./utils/deduplication";
 import { storagePut, storageGet, storageDelete } from "./storage";
 import { parseAuditReportBuffer } from "./parser";
@@ -380,86 +374,6 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
         return await updateFindingTemplate(id, data);
-      }),
-    generalizeTemplate: protectedProcedure
-      .input(z.object({ id: z.number(), finding: z.string() }))
-      .mutation(async ({ input }) => {
-        const result = await aiService.generalize(input.finding);
-        return result;
-      }),
-    syncTemplates: protectedProcedure
-      .mutation(async () => {
-        return await syncTemplatesFromFindings();
-      }),
-
-    bulkGeneralize: protectedProcedure
-      .mutation(async () => {
-        return await bulkGeneralizeTemplates(aiService);
-      }),
-
-    resetTemplate: protectedProcedure
-      .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
-        return await resetTemplateToOriginal(input.id);
-      }),
-    
-    generateFromDraft: protectedProcedure
-      .input(z.object({ draft: z.string() }))
-      .mutation(async ({ input }) => {
-        // 1. Identifier les critères probables (Referentiel Ranking v1.3)
-        const initialCriteria = await searchCriteria(input.draft);
-        if (initialCriteria.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Aucun critère correspondant trouvé pour ces mots-clés.",
-          });
-        }
-
-        const top3 = initialCriteria.slice(0, 3);
-        
-        // 2. Recherche Croisée dans l'historique (Knowledge-Base) pour affiner le ranking
-        const criteriaWithHistory = await Promise.all(top3.map(async (c) => {
-          const similarFindings = await searchSimilarFindings(input.draft, (c as any).reference);
-          
-          const historyScore = similarFindings.length * 15; 
-          const combinedScore = (c as any).matchScore + historyScore;
-          
-          return {
-            ...c,
-            similarFindings,
-            combinedScore
-          };
-        }));
-
-        // Ré-ordonnancement basé sur le score combiné (Ref + Histoire)
-        criteriaWithHistory.sort((a, b) => b.combinedScore - a.combinedScore);
-
-        const bestMatch = criteriaWithHistory[0];
-        const otherMatches = criteriaWithHistory.slice(1, 4);
-        
-        // Calcul de confiance basé sur l'écart de score combiné
-        let confidence = 0.5;
-        if (criteriaWithHistory.length > 1) {
-          const s1 = criteriaWithHistory[0].combinedScore || 1;
-          const s2 = criteriaWithHistory[1].combinedScore || 0;
-          confidence = Math.min(0.95, (s1 / (s1 + s2)) * 0.9 + 0.1);
-        } else {
-          confidence = 0.8;
-        }
-
-        // 3. Synthèse Contextuelle (Knowledge-Base Driven)
-        // On utilise les constats réels trouvés comme base de synthèse
-        // 3. Synthèse (Suspendue - Design Only)
-        const refined = input.draft;
-        const sourceUsed = "Action suspendue (Design Only)";
-
-        return {
-          suggestedFinding: refined,
-          criterion: bestMatch,
-          otherCriteria: otherMatches,
-          confidence,
-          templateUsed: sourceUsed
-        };
       }),
   }),
 });

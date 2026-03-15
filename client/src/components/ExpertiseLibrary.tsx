@@ -15,8 +15,7 @@ export default function ExpertiseLibrary() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editValues, setEditValues] = useState<{ finding: string; solution: string }>({ finding: "", solution: "" });
-  const [cleaningId, setCleaningId] = useState<number | null>(null);
-  const [cleaningResult, setCleaningResult] = useState<{ original: string; cleaned: string; changes: string[] } | null>(null);
+
 
   const utils = trpc.useUtils();
   const { data: templates, isLoading } = trpc.findingTemplates.search.useQuery({
@@ -29,8 +28,7 @@ export default function ExpertiseLibrary() {
     onSuccess: () => {
       toast.success("Modèle mis à jour");
       setEditingId(null);
-      setCleaningId(null);
-      setCleaningResult(null);
+
       utils.findingTemplates.search.invalidate();
     },
     onError: (error) => {
@@ -38,49 +36,7 @@ export default function ExpertiseLibrary() {
     },
   });
 
-  const generalizeTemplate = trpc.findingTemplates.generalizeTemplate.useMutation({
-    onSuccess: (result) => {
-      setCleaningResult(result);
-    },
-    onError: (error) => {
-      toast.error(`Erreur d'IA : ${error.message}`);
-      setCleaningId(null);
-    }
-  });
 
-  const syncTemplates = trpc.findingTemplates.syncTemplates.useMutation({
-    onSuccess: (data) => {
-      if (data.count === 0) {
-        toast.info("Votre bibliothèque est déjà parfaitement synchronisée avec vos rapports.");
-      } else {
-        toast.success(`${data.count} nouveaux modèles générés depuis vos rapports.`);
-      }
-      utils.findingTemplates.search.invalidate();
-    },
-    onError: (error) => {
-      toast.error(`Erreur de synchronisation : ${error.message}`);
-    }
-  });
-
-  const bulkGeneralize = trpc.findingTemplates.bulkGeneralize.useMutation({
-    onSuccess: (data) => {
-      toast.success(`${data.updated} modèles nettoyés automatiquement sur ${data.processed} traités.`);
-      utils.findingTemplates.search.invalidate();
-    },
-    onError: (error) => {
-      toast.error(`Erreur de nettoyage groupé : ${error.message}`);
-    }
-  });
-
-  const resetTemplate = trpc.findingTemplates.resetTemplate.useMutation({
-    onSuccess: () => {
-      toast.success("Modèle restauré à sa version d'origine.");
-      utils.findingTemplates.search.invalidate();
-    },
-    onError: (error) => {
-      toast.error(`Erreur de restauration : ${error.message}`);
-    }
-  });
 
   const handleEdit = (t: any) => {
     setEditingId(t.id);
@@ -95,20 +51,7 @@ export default function ExpertiseLibrary() {
     });
   };
 
-  const handleAIClean = (t: any) => {
-    setCleaningId(t.id);
-    setCleaningResult(null);
-    generalizeTemplate.mutate({ id: t.id, finding: t.finding });
-  };
 
-  const handleApplyClean = (id: number) => {
-    if (!cleaningResult) return;
-    updateTemplate.mutate({
-      id,
-      finding: cleaningResult.cleaned,
-      status: "approved"
-    });
-  };
 
   if (isLoading && !templates) {
     return (
@@ -126,30 +69,7 @@ export default function ExpertiseLibrary() {
           <p className="text-sm text-gray-500">Gérez vos modèles de constats génériques et approuvés</p>
         </div>
         <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => syncTemplates.mutate()}
-            disabled={syncTemplates.isPending}
-            className="bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-          >
-            {syncTemplates.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <RefreshCw className="w-4 h-4 mr-2" />}
-            Synchroniser depuis l'historique
-          </Button>
-          <Button 
-            variant="default"
-            size="sm"
-            onClick={() => {
-              if (confirm("Voulez-vous lancer le nettoyage IA sur tous les modèles en brouillon ? Une sauvegarde de l'original sera conservée pour chaque modèle.")) {
-                bulkGeneralize.mutate();
-              }
-            }}
-            disabled={bulkGeneralize.isPending}
-            className="bg-indigo-600 hover:bg-indigo-700"
-          >
-            {bulkGeneralize.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Wand2 className="w-4 h-4 mr-2" />}
-            Nettoyage IA Groupé
-          </Button>
+
           <Badge variant="secondary" className="px-3 py-1">
             {templates?.length || 0} modèles
           </Badge>
@@ -249,65 +169,14 @@ export default function ExpertiseLibrary() {
               ) : (
                 <div className="group relative">
                   <div className="pr-12">
-                    {cleaningId === t.id ? (
-                      <div className="bg-indigo-50/50 rounded-lg p-3 border border-indigo-100 animate-in fade-in duration-500">
-                        <div className="flex items-center gap-2 text-indigo-700 font-semibold mb-2">
-                          <Sparkles className="w-4 h-4" />
-                          <span>Suggestion de nettoyage expert</span>
-                        </div>
-                        
-                        {!cleaningResult ? (
-                          <div className="flex items-center gap-2 text-indigo-600 text-sm py-2">
-                            <RefreshCw className="w-4 h-4 animate-spin" />
-                            <span>L'intelligence artificielle analyse le constat...</span>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <div className="flex flex-col gap-2">
-                              <div className="text-xs text-indigo-500 uppercase font-bold">Version corrigée</div>
-                              <div className="text-gray-900 bg-white p-2 rounded border border-indigo-200 shadow-sm">
-                                {cleaningResult.cleaned}
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap gap-2">
-                              {cleaningResult.changes.map((change, idx) => (
-                                <Badge key={idx} variant="outline" className="bg-indigo-50 text-indigo-600 border-indigo-200">
-                                  {change}
-                                </Badge>
-                              ))}
-                            </div>
-
-                            <div className="flex justify-end gap-2 pt-2 border-t border-indigo-100">
-                              <Button variant="ghost" size="sm" onClick={() => setCleaningId(null)} className="text-gray-500 h-8">
-                                <X className="w-4 h-4 mr-1" /> Rejeter
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleApplyClean(t.id)} 
-                                disabled={updateTemplate.isPending}
-                                className="bg-indigo-600 hover:bg-indigo-700 h-8"
-                              >
-                                {updateTemplate.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
-                                Appliquer & Approuver
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                    <div className="text-gray-900 font-medium mb-2">{t.finding}</div>
+                    {t.solution && (
+                      <div className="text-sm text-gray-600 bg-slate-50 p-2 rounded border border-slate-100 italic">
+                        <span className="font-semibold not-italic text-indigo-600 mr-1">Solution:</span> {t.solution}
                       </div>
-                    ) : (
-                      <>
-                        <div className="text-gray-900 font-medium mb-2">{t.finding}</div>
-                        {t.solution && (
-                          <div className="text-sm text-gray-600 bg-slate-50 p-2 rounded border border-slate-100 italic">
-                            <span className="font-semibold not-italic text-indigo-600 mr-1">Solution:</span> {t.solution}
-                          </div>
-                        )}
-                      </>
                     )}
                   </div>
-                  {!cleaningId && (
-                    <div className="absolute top-0 right-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-0 right-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -316,34 +185,7 @@ export default function ExpertiseLibrary() {
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      {t.status === 'draft' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
-                          onClick={() => handleAIClean(t)}
-                          title="Nettoyage expert IA"
-                        >
-                          <Sparkles className="w-4 h-4" />
-                        </Button>
-                      )}
-                      {t.originalFinding && t.finding !== t.originalFinding && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                          onClick={() => {
-                            if (confirm("Voulez-vous restaurer la phrase d'origine du rapport Word ?")) {
-                              resetTemplate.mutate({ id: t.id });
-                            }
-                          }}
-                          title="Restaurer l'original"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </Button>
-                      )}
                     </div>
-                  )}
                 </div>
               )}
             </CardContent>

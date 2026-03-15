@@ -13,9 +13,6 @@ import ReportsManagement from "@/components/ReportsManagement";
 import StatsOverview from "@/components/StatsOverview";
 import ExpertiseLibrary from "@/components/ExpertiseLibrary";
 import EvolutionReport from "@/components/EvolutionReport";
-import McpCapabilities from "@/components/McpCapabilities";
-import DraftingAssistant from "@/components/DraftingAssistant";
-import { PenTool } from "lucide-react";
 
 export default function Home() {
   const { user, isAuthenticated, logout } = useAuth();
@@ -78,7 +75,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-8 mb-8">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-6 mb-8">
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
               <span className="hidden sm:inline">Upload</span>
@@ -87,10 +84,7 @@ export default function Home() {
               <FileText className="w-4 h-4" />
               <span className="hidden sm:inline">Rapports</span>
             </TabsTrigger>
-            <TabsTrigger value="drafting" className="flex items-center gap-2">
-              <PenTool className="w-4 h-4" />
-              <span className="hidden sm:inline">Rédaction</span>
-            </TabsTrigger>
+
             <TabsTrigger value="library" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Audit Explorer</span>
@@ -107,10 +101,7 @@ export default function Home() {
               <History className="w-4 h-4" />
               <span className="hidden sm:inline">Evolution</span>
             </TabsTrigger>
-            <TabsTrigger value="ai" className="flex items-center gap-2">
-              <Brain className="w-4 h-4" />
-              <span className="hidden sm:inline">AI Hub</span>
-            </TabsTrigger>
+
           </TabsList>
 
           <TabsContent value="upload" className="space-y-6">
@@ -121,9 +112,7 @@ export default function Home() {
             <ReportsManagement />
           </TabsContent>
 
-          <TabsContent value="drafting" className="space-y-6">
-            <DraftingAssistant />
-          </TabsContent>
+
 
           <TabsContent value="library" className="space-y-6">
             <FindingsLibrary />
@@ -141,9 +130,7 @@ export default function Home() {
             <EvolutionReport />
           </TabsContent>
 
-          <TabsContent value="ai" className="space-y-6">
-            <McpCapabilities />
-          </TabsContent>
+
         </Tabs>
       </main>
     </div>
